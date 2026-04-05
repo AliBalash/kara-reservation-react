@@ -398,24 +398,55 @@
   font-size: 0.86rem;
 }
 
-.kp-filter-row {
+.kp-car-toolbar {
   margin-top: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
+  border: 1px solid #d8deeb;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff, #f8fafe);
+  padding: 10px;
+  display: grid;
+  grid-template-columns: minmax(190px, 1.2fr) repeat(4, minmax(130px, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
 }
 
-.kp-filter-row__head h3 {
-  margin: 0;
-  font-size: 0.95rem;
+.kp-car-filter-field {
+  display: grid;
+  gap: 6px;
 }
 
-.kp-filter-row__head p {
-  margin: 4px 0 0;
-  color: var(--kp-muted);
-  font-size: 0.79rem;
+.kp-car-filter-field span {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #4f5b75;
+}
+
+.kp-car-filter-field input,
+.kp-car-filter-field select {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #d4dbe8;
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.84rem;
+  color: var(--kp-text);
+  padding: 9px 10px;
+}
+
+.kp-car-filter-field input:focus,
+.kp-car-filter-field select:focus {
+  outline: none;
+  border-color: rgba(221, 51, 51, 0.52);
+  box-shadow: 0 0 0 3px rgba(221, 51, 51, 0.13);
+}
+
+.kp-car-filter-field--search {
+  grid-column: span 2;
+}
+
+.kp-car-filter-reset {
+  white-space: nowrap;
+  align-self: stretch;
 }
 
 .kp-filter-meta {
@@ -427,59 +458,6 @@
   display: grid;
   text-align: center;
   min-width: 130px;
-}
-
-.kp-brand-rail {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 2px 0 8px;
-  scroll-snap-type: x proximity;
-}
-
-.kp-brand-rail::-webkit-scrollbar {
-  height: 7px;
-}
-
-.kp-brand-rail::-webkit-scrollbar-thumb {
-  background: #d4dae7;
-  border-radius: 999px;
-}
-
-.kp-brand-pill {
-  flex: 0 0 auto;
-  min-width: 138px;
-  border: 1px solid #dbe1ee;
-  border-radius: 14px;
-  background: #fff;
-  padding: 7px 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  scroll-snap-align: start;
-}
-
-.kp-brand-pill:hover {
-  transform: translateY(-1px);
-  border-color: rgba(221, 51, 51, 0.42);
-  box-shadow: 0 10px 20px rgba(16, 24, 32, 0.09);
-}
-
-.kp-brand-pill.is-active {
-  border-color: rgba(221, 51, 51, 0.54);
-  background: linear-gradient(140deg, rgba(221, 51, 51, 0.1), rgba(221, 51, 51, 0.03));
-  box-shadow: 0 12px 20px rgba(221, 51, 51, 0.14);
-}
-
-.kp-brand-pill__text {
-  font-size: 0.8rem;
-  font-weight: 700;
-  white-space: nowrap;
 }
 
 .kp-brand-logo {
@@ -502,6 +480,17 @@
   display: block;
 }
 
+.kp-filter-meta--stats {
+  display: inline-grid;
+  justify-items: center;
+}
+
+.kp-filter-meta--stats small {
+  margin-top: 2px;
+  color: #5d6780;
+  font-size: 0.72rem;
+}
+
 .kp-filter-meta strong {
   font-size: 1rem;
 }
@@ -518,8 +507,7 @@
   background:
     radial-gradient(circle at 0% 0%, rgba(221, 51, 51, 0.06), transparent 22%),
     linear-gradient(180deg, #fbfcff, #f6f8fc);
-  max-height: 760px;
-  overflow-y: auto;
+  overflow: visible;
   padding: 12px;
 }
 
@@ -584,7 +572,8 @@
 .kp-car__media > img {
   width: 100%;
   height: 176px;
-  object-fit: cover;
+  object-fit: contain;
+  background: linear-gradient(160deg, #f4f7fc, #edf2f9);
   border-radius: 12px;
   border: 1px solid #d7deea;
   display: block;
@@ -702,6 +691,30 @@
   margin: 0;
   color: var(--kp-warning);
   font-size: 0.75rem;
+}
+
+.kp-warning--filter {
+  margin-top: 10px;
+  border: 1px solid rgba(167, 96, 18, 0.34);
+  border-radius: 10px;
+  background: rgba(167, 96, 18, 0.08);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kp-warning--filter button {
+  border: 1px solid rgba(167, 96, 18, 0.44);
+  border-radius: 999px;
+  background: #fff;
+  color: #8a4e10;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  cursor: pointer;
 }
 
 .kp-empty {
@@ -852,7 +865,8 @@
 .kp-summary__card img {
   width: 100%;
   aspect-ratio: 16 / 9;
-  object-fit: cover;
+  object-fit: contain;
+  background: linear-gradient(160deg, #f4f7fc, #edf2f9);
   border-radius: 11px;
   border: 1px solid #d8deea;
 }
@@ -1099,6 +1113,19 @@
     height: 190px;
   }
 
+  .kp-car-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kp-car-filter-field--search {
+    grid-column: 1 / -1;
+  }
+
+  .kp-car-filter-reset {
+    width: 100%;
+    grid-column: 1 / -1;
+  }
+
   .kp-car__prices {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1143,11 +1170,16 @@
     grid-template-columns: 1fr;
   }
 
-  .kp-car__prices {
+  .kp-car-toolbar {
     grid-template-columns: 1fr;
   }
 
-  .kp-car-scroll {
-    max-height: 520px;
+  .kp-car-filter-field--search,
+  .kp-car-filter-reset {
+    grid-column: auto;
+  }
+
+  .kp-car__prices {
+    grid-template-columns: 1fr;
   }
 }

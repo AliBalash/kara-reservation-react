@@ -40,6 +40,7 @@ const STEPS = [
 ];
 
 const PHONE_REGEX = /^\+\d{8,15}$/;
+const LOCAL_CAR_PLACEHOLDER = "/car-placeholder.svg";
 
 const BRAND_LOGO_PATHS = {
   bentley: "/brand-logos/bentley.svg",
@@ -83,6 +84,28 @@ const FIELD_KEY_MAP = {
   nationality: "nationality",
   notes: "notes",
   "service_quantities.child_seat": "childSeatQuantity",
+};
+
+const FIELD_LABELS_FA = {
+  selectedCarId: "خودرو",
+  pickupLocation: "محل تحویل",
+  returnLocation: "محل بازگشت",
+  pickupDate: "تاریخ تحویل",
+  returnDate: "تاریخ بازگشت",
+  selectedServices: "خدمات جانبی",
+  selectedInsurance: "بیمه",
+  drivingLicenseOption: "گزینه گواهینامه",
+  driverHours: "ساعت راننده",
+  firstName: "نام",
+  lastName: "نام خانوادگی",
+  email: "ایمیل",
+  phone: "شماره تماس",
+  messengerPhone: "شماره پیام‌رسان",
+  nationalCode: "کد ملی/شناسه",
+  nationality: "ملیت",
+  notes: "توضیحات",
+  childSeatQuantity: "تعداد صندلی کودک",
+  acceptTerms: "تایید قوانین",
 };
 
 const STEP_FIELDS = {
@@ -196,10 +219,84 @@ function normalizeValidationErrors(errorBag = {}) {
       }
     }
 
-    normalized[mapped] = String(text);
+    normalized[mapped] = toPersianValidationMessage(String(text), mapped);
   });
 
   return normalized;
+}
+
+function hasPersianText(text) {
+  return /[\u0600-\u06FF]/.test(String(text || ""));
+}
+
+function fieldLabelFa(field) {
+  return FIELD_LABELS_FA[field] || "این فیلد";
+}
+
+function toPersianValidationMessage(message, field = "") {
+  const text = String(message || "").trim();
+  if (!text) return "مقدار وارد شده معتبر نیست.";
+  if (hasPersianText(text)) return text;
+
+  const conflictMatch = text.match(/already reserved from\s+(.+?)\s+to\s+(.+?)\.?$/i);
+  if (conflictMatch) {
+    return `این خودرو از ${conflictMatch[1]} تا ${conflictMatch[2]} قبلا رزرو شده است.`;
+  }
+
+  if (/selected vehicle is not available/i.test(text)) {
+    return "خودروی انتخاب‌شده در بازه زمانی انتخابی در دسترس نیست.";
+  }
+
+  if (/service quantity key is invalid/i.test(text)) {
+    return "کلید تعداد سرویس انتخابی معتبر نیست.";
+  }
+
+  if (/field is required/i.test(text)) {
+    return `${fieldLabelFa(field)} الزامی است.`;
+  }
+
+  if (/field must be a valid email/i.test(text) || /field must be a valid email address/i.test(text)) {
+    return "ایمیل وارد شده معتبر نیست.";
+  }
+
+  if (/field format is invalid/i.test(text)) {
+    return `فرمت ${fieldLabelFa(field)} معتبر نیست.`;
+  }
+
+  if (/field must be a date after/i.test(text)) {
+    return "تاریخ بازگشت باید بعد از تاریخ تحویل باشد.";
+  }
+
+  if (/field must be a date/i.test(text)) {
+    return `فرمت ${fieldLabelFa(field)} معتبر نیست.`;
+  }
+
+  if (/field must be an integer/i.test(text) || /field must be a number/i.test(text)) {
+    return `${fieldLabelFa(field)} باید عددی باشد.`;
+  }
+
+  if (/field must be at least 0/i.test(text)) {
+    return `${fieldLabelFa(field)} نمی‌تواند کمتر از صفر باشد.`;
+  }
+
+  if (/field may not be greater than/i.test(text) || /field must not be greater than/i.test(text)) {
+    return `${fieldLabelFa(field)} از حد مجاز بیشتر است.`;
+  }
+
+  if (/The selected .* is invalid/i.test(text)) {
+    return `${fieldLabelFa(field)} انتخاب‌شده معتبر نیست.`;
+  }
+
+  return `${fieldLabelFa(field)} معتبر نیست.`;
+}
+
+function toPersianErrorText(message, fallback) {
+  const translated = toPersianValidationMessage(message, "");
+  if (!translated || translated === "این فیلد معتبر نیست.") {
+    return fallback;
+  }
+
+  return translated;
 }
 
 function normalizePhoneInput(value) {
@@ -323,6 +420,13 @@ function App() {
 
   const [bootstrapData, setBootstrapData] = useState(null);
   const [cars, setCars] = useState([]);
+  const [carFilters, setCarFilters] = useState({
+    search: "",
+    brand: "all",
+    availability: "all",
+    gear: "all",
+    sort: "recommended",
+  });
 
   const [isBootstrapLoading, setBootstrapLoading] = useState(true);
   const [isCarsLoading, setCarsLoading] = useState(false);
@@ -335,6 +439,103 @@ function App() {
   const fallbackCarImage = useMemo(() => fallbackImageUrl(), []);
 
   const locationOptions = bootstrapData?.location_options || [];
+  const availableCarsCount = useMemo(
+    () => cars.filter((car) => car.is_available_for_selection !== false).length,
+    [cars]
+  );
+
+  const brandFilterOptions = useMemo(() => {
+    const map = new Map();
+
+    cars.forEach((car) => {
+      const raw = String(car?.car_model?.brand || "").trim();
+      if (!raw) return;
+
+      const key = normalizeBrandKey(raw);
+      const previous = map.get(key);
+      if (previous) {
+        previous.count += 1;
+      } else {
+        map.set(key, { key, label: raw, count: 1 });
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [cars]);
+
+  const filteredCars = useMemo(() => {
+    const searchValue = carFilters.search.trim().toLowerCase();
+    const selectedBrand = carFilters.brand;
+    const availability = carFilters.availability;
+    const gear = carFilters.gear;
+
+    let list = cars.filter((car) => {
+      if (selectedBrand !== "all") {
+        const carBrand = normalizeBrandKey(car?.car_model?.brand || "");
+        if (carBrand !== selectedBrand) return false;
+      }
+
+      if (availability === "available" && car.is_available_for_selection === false) {
+        return false;
+      }
+
+      if (availability === "unavailable" && car.is_available_for_selection !== false) {
+        return false;
+      }
+
+      if (gear !== "all") {
+        const carGear = String(car?.options?.gear || "").toLowerCase();
+        if (carGear !== gear) return false;
+      }
+
+      if (searchValue) {
+        const haystack = [
+          car?.car_model?.brand,
+          car?.car_model?.model,
+          car?.plate_number,
+          car?.car_model?.brand && car?.car_model?.model
+            ? `${car.car_model.brand} ${car.car_model.model}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        if (!haystack.includes(searchValue)) return false;
+      }
+
+      return true;
+    });
+
+    const selectedId = String(form.selectedCarId || "");
+    const comparePrice = (car) => Number(car?.pricing?.short || 0);
+
+    list = [...list].sort((left, right) => {
+      if (carFilters.sort === "price_asc") return comparePrice(left) - comparePrice(right);
+      if (carFilters.sort === "price_desc") return comparePrice(right) - comparePrice(left);
+      if (carFilters.sort === "brand_az") {
+        const leftName = `${left?.car_model?.brand || ""} ${left?.car_model?.model || ""}`.trim();
+        const rightName = `${right?.car_model?.brand || ""} ${right?.car_model?.model || ""}`.trim();
+        return leftName.localeCompare(rightName);
+      }
+
+      if (String(left.id) === selectedId) return -1;
+      if (String(right.id) === selectedId) return 1;
+
+      const leftAvailable = left.is_available_for_selection !== false ? 1 : 0;
+      const rightAvailable = right.is_available_for_selection !== false ? 1 : 0;
+      if (leftAvailable !== rightAvailable) return rightAvailable - leftAvailable;
+
+      return comparePrice(left) - comparePrice(right);
+    });
+
+    return list;
+  }, [cars, carFilters, form.selectedCarId]);
+
+  const isSelectedCarHiddenByFilter = useMemo(() => {
+    if (!form.selectedCarId) return false;
+    return !filteredCars.some((car) => String(car.id) === String(form.selectedCarId));
+  }, [filteredCars, form.selectedCarId]);
 
   const addonServices = useMemo(() => {
     if (!bootstrapData?.services) return [];
@@ -439,7 +640,12 @@ function App() {
         setSubmitError("");
       } catch (error) {
         if (controller.signal.aborted) return;
-        setSubmitError(`خطا در دریافت اطلاعات اولیه: ${error.message}`);
+        setSubmitError(
+          `خطا در دریافت اطلاعات اولیه: ${toPersianErrorText(
+            error.message,
+            "ارتباط با API برقرار نشد."
+          )}`
+        );
       } finally {
         if (isMounted) setBootstrapLoading(false);
       }
@@ -482,7 +688,12 @@ function App() {
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
-        setSubmitError(`خطا در دریافت لیست خودروها: ${error.message}`);
+        setSubmitError(
+          `خطا در دریافت لیست خودروها: ${toPersianErrorText(
+            error.message,
+            "دریافت داده خودروها انجام نشد."
+          )}`
+        );
       })
       .finally(() => {
         if (!controller.signal.aborted) setCarsLoading(false);
@@ -516,10 +727,18 @@ function App() {
 
         if (isValidationApiError(error)) {
           setErrors((prev) => ({ ...prev, ...normalizeValidationErrors(error.errors) }));
+          setSubmitError("برخی اطلاعات واردشده معتبر نیست. لطفا موارد مشخص‌شده را اصلاح کنید.");
+          setQuote(null);
+          return;
         }
 
         setQuote(null);
-        setSubmitError(`خطا در محاسبه قیمت: ${error.message}`);
+        setSubmitError(
+          `خطا در محاسبه قیمت: ${toPersianErrorText(
+            error.message,
+            "محاسبه قیمت با خطا مواجه شد."
+          )}`
+        );
       } finally {
         if (!controller.signal.aborted) setQuoteLoading(false);
       }
@@ -571,6 +790,40 @@ function App() {
     }));
 
     clearFieldError("childSeatQuantity");
+  }
+
+  function updateCarFilter(key, value) {
+    setCarFilters((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function resetCarFilters() {
+    setCarFilters({
+      search: "",
+      brand: "all",
+      availability: "all",
+      gear: "all",
+      sort: "recommended",
+    });
+  }
+
+  function handleCarImageError(event) {
+    const target = event.currentTarget;
+    const stage = target.dataset.fallbackStage || "initial";
+
+    if (stage === "initial" && fallbackCarImage && !target.src.includes(fallbackCarImage)) {
+      target.src = fallbackCarImage;
+      target.dataset.fallbackStage = "api";
+      return;
+    }
+
+    if (stage !== "local" && !target.src.endsWith(LOCAL_CAR_PLACEHOLDER)) {
+      target.src = LOCAL_CAR_PLACEHOLDER;
+      target.dataset.fallbackStage = "local";
+      target.style.objectFit = "contain";
+      return;
+    }
+
+    target.onerror = null;
   }
 
   function setStepErrors(stepIndex, nextErrors) {
@@ -720,14 +973,16 @@ function App() {
       if (isValidationApiError(error)) {
         const serverErrors = normalizeValidationErrors(error.errors);
         setErrors((prev) => ({ ...prev, ...serverErrors }));
-        setSubmitError(error.message || "برخی فیلدها معتبر نیستند.");
+        setSubmitError("برخی فیلدها معتبر نیستند. لطفا خطاهای فرم را برطرف کنید.");
 
         const firstServerField = Object.keys(serverErrors)[0];
         if (firstServerField) {
           setCurrentStep(stepByField(firstServerField));
         }
       } else {
-        setSubmitError(error.message || "ارسال درخواست با خطا مواجه شد.");
+        setSubmitError(
+          toPersianErrorText(error.message, "ارسال درخواست با خطا مواجه شد. لطفا دوباره تلاش کنید.")
+        );
       }
     } finally {
       setSubmitting(false);
@@ -741,6 +996,7 @@ function App() {
     setSubmitError("");
     setSubmitSuccess(null);
     setQuote(null);
+    resetCarFilters();
   }
 
   if (isBootstrapLoading) {
@@ -963,19 +1219,93 @@ function App() {
                   </p>
                 </header>
 
-                <div className="kp-filter-meta">
-                  <strong>{cars.length}</strong>
-                  <span>خودرو برای نمایش</span>
+                <div className="kp-car-toolbar">
+                  <label className="kp-car-filter-field kp-car-filter-field--search">
+                    <span>جستجوی سریع</span>
+                    <input
+                      value={carFilters.search}
+                      onChange={(event) => updateCarFilter("search", event.target.value)}
+                      placeholder="برند، مدل یا پلاک..."
+                    />
+                  </label>
+
+                  <label className="kp-car-filter-field">
+                    <span>برند</span>
+                    <select
+                      value={carFilters.brand}
+                      onChange={(event) => updateCarFilter("brand", event.target.value)}
+                    >
+                      <option value="all">همه برندها</option>
+                      {brandFilterOptions.map((item) => (
+                        <option key={item.key} value={item.key}>
+                          {item.label} ({item.count})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="kp-car-filter-field">
+                    <span>وضعیت رزرو</span>
+                    <select
+                      value={carFilters.availability}
+                      onChange={(event) => updateCarFilter("availability", event.target.value)}
+                    >
+                      <option value="all">همه</option>
+                      <option value="available">فقط قابل رزرو</option>
+                      <option value="unavailable">فقط غیرقابل رزرو</option>
+                    </select>
+                  </label>
+
+                  <label className="kp-car-filter-field">
+                    <span>گیربکس</span>
+                    <select
+                      value={carFilters.gear}
+                      onChange={(event) => updateCarFilter("gear", event.target.value)}
+                    >
+                      <option value="all">همه</option>
+                      <option value="automatic">اتوماتیک</option>
+                      <option value="manual">دنده‌ای</option>
+                    </select>
+                  </label>
+
+                  <label className="kp-car-filter-field">
+                    <span>مرتب‌سازی</span>
+                    <select
+                      value={carFilters.sort}
+                      onChange={(event) => updateCarFilter("sort", event.target.value)}
+                    >
+                      <option value="recommended">پیشنهادی</option>
+                      <option value="price_asc">قیمت کمتر</option>
+                      <option value="price_desc">قیمت بیشتر</option>
+                      <option value="brand_az">برند (الفبا)</option>
+                    </select>
+                  </label>
+
+                  <button
+                    type="button"
+                    className="kp-btn kp-btn--outline kp-car-filter-reset"
+                    onClick={resetCarFilters}
+                  >
+                    پاک کردن فیلترها
+                  </button>
+                </div>
+
+                <div className="kp-filter-meta kp-filter-meta--stats">
+                  <strong>
+                    {filteredCars.length} / {cars.length}
+                  </strong>
+                  <span>نمایش داده شده</span>
+                  <small>{availableCarsCount} خودرو قابل رزرو</small>
                 </div>
 
                 <div className="kp-car-scroll">
                   {isCarsLoading ? (
                     <p className="kp-muted">در حال دریافت لیست خودروها...</p>
-                  ) : cars.length === 0 ? (
+                  ) : filteredCars.length === 0 ? (
                     <div className="kp-empty">در حال حاضر خودرویی برای نمایش موجود نیست.</div>
                   ) : (
                     <div className="kp-car-list">
-                      {cars.map((car, cardIndex) => {
+                      {filteredCars.map((car, cardIndex) => {
                         const isSelected = String(form.selectedCarId) === String(car.id);
                         const isAvailable = car.is_available_for_selection !== false;
                         const brand = car.car_model?.brand || "";
@@ -1020,13 +1350,11 @@ function App() {
                               </div>
 
                               <img
-                                src={car.primary_image_url || fallbackCarImage}
+                                src={car.primary_image_url || fallbackCarImage || LOCAL_CAR_PLACEHOLDER}
                                 alt={title || "Car"}
-                                onError={(event) => {
-                                  if (event.currentTarget.src !== fallbackCarImage) {
-                                    event.currentTarget.src = fallbackCarImage;
-                                  }
-                                }}
+                                loading="lazy"
+                                decoding="async"
+                                onError={handleCarImageError}
                               />
 
                               <div className="kp-car__price-tag">
@@ -1089,6 +1417,15 @@ function App() {
                     </div>
                   )}
                 </div>
+
+                {isSelectedCarHiddenByFilter ? (
+                  <p className="kp-warning kp-warning--filter">
+                    خودرو انتخاب‌شده فعلی با فیلترها پنهان شده است.
+                    <button type="button" onClick={resetCarFilters}>
+                      نمایش مجدد
+                    </button>
+                  </p>
+                ) : null}
 
                 <small className="kp-error">{getErrorText(errors.selectedCarId)}</small>
               </article>
@@ -1345,13 +1682,9 @@ function App() {
               {selectedCar ? (
                 <>
                   <img
-                    src={selectedCar.primary_image_url || fallbackCarImage}
+                    src={selectedCar.primary_image_url || fallbackCarImage || LOCAL_CAR_PLACEHOLDER}
                     alt={`${selectedCar.car_model?.brand || ""} ${selectedCar.car_model?.model || ""}`}
-                    onError={(event) => {
-                      if (event.currentTarget.src !== fallbackCarImage) {
-                        event.currentTarget.src = fallbackCarImage;
-                      }
-                    }}
+                    onError={handleCarImageError}
                   />
                   <strong>
                     {selectedCar.car_model?.brand} {selectedCar.car_model?.model}
