@@ -374,10 +374,6 @@
   box-shadow: 0 0 0 4px rgba(221, 51, 51, 0.12);
 }
 
-.kp-field--brand-filter {
-  min-width: 280px;
-}
-
 .kp-field--full {
   grid-column: 1 / -1;
 }
@@ -407,17 +403,119 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 10px;
-  align-items: flex-end;
+  gap: 12px;
+  align-items: center;
+}
+
+.kp-filter-row__head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.kp-filter-row__head p {
+  margin: 4px 0 0;
+  color: var(--kp-muted);
+  font-size: 0.79rem;
 }
 
 .kp-filter-meta {
-  border: 1px solid #dbe0ea;
-  border-radius: 12px;
-  background: #fafbfd;
-  padding: 9px 12px;
+  border: 1px solid #d5dce9;
+  border-radius: 999px;
+  background: #fff;
+  padding: 8px 12px;
   display: grid;
   text-align: center;
+  min-width: 130px;
+}
+
+.kp-brand-rail {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 8px;
+  scroll-snap-type: x proximity;
+}
+
+.kp-brand-rail::-webkit-scrollbar {
+  height: 7px;
+}
+
+.kp-brand-rail::-webkit-scrollbar-thumb {
+  background: #d4dae7;
+  border-radius: 999px;
+}
+
+.kp-brand-pill {
+  flex: 0 0 auto;
+  min-width: 138px;
+  border: 1px solid #dbe1ee;
+  border-radius: 14px;
+  background: #fff;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  scroll-snap-align: start;
+}
+
+.kp-brand-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(221, 51, 51, 0.42);
+  box-shadow: 0 10px 20px rgba(16, 24, 32, 0.09);
+}
+
+.kp-brand-pill.is-active {
+  border-color: rgba(221, 51, 51, 0.54);
+  background: linear-gradient(140deg, rgba(221, 51, 51, 0.1), rgba(221, 51, 51, 0.03));
+  box-shadow: 0 12px 20px rgba(221, 51, 51, 0.14);
+}
+
+.kp-brand-pill__text {
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.kp-brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #d6ddeb;
+  background: linear-gradient(150deg, #fff, #edf1f8);
+  position: relative;
+  display: grid;
+  place-content: center;
+  overflow: hidden;
+}
+
+.kp-brand-logo b {
+  font-size: 0.67rem;
+  color: #3e4a64;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.kp-brand-logo img {
+  position: absolute;
+  inset: 5px;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  object-fit: contain;
+  transition: opacity 0.2s ease;
+}
+
+.kp-brand-logo--all {
+  border: 0;
+  background: linear-gradient(140deg, var(--kp-charcoal), #2f3540);
+}
+
+.kp-brand-logo--all b {
+  color: #fff;
 }
 
 .kp-filter-meta strong {
@@ -431,51 +529,103 @@
 
 .kp-car-scroll {
   margin-top: 12px;
-  border: 1px solid #dde2ec;
+  border: 1px solid #d7deeb;
   border-radius: var(--kp-radius-md);
-  background: #fafbfd;
-  max-height: 700px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(221, 51, 51, 0.06), transparent 22%),
+    linear-gradient(180deg, #fbfcff, #f6f8fc);
+  max-height: 760px;
   overflow-y: auto;
-  padding: 10px;
+  padding: 12px;
 }
 
 .kp-car-list {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .kp-car {
-  border: 1px solid #d8dde8;
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: var(--kp-shadow-sm);
-  padding: 10px;
+  border: 1px solid #d5dcea;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff, #fbfcff);
+  box-shadow: 0 14px 24px rgba(16, 24, 32, 0.08);
+  padding: 12px;
   display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 10px;
+  grid-template-columns: minmax(230px, 260px) 1fr;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kp-car:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 30px rgba(16, 24, 32, 0.12);
 }
 
 .kp-car.is-selected {
-  border-color: rgba(221, 51, 51, 0.5);
-  box-shadow: 0 0 0 2px rgba(221, 51, 51, 0.12);
+  border-color: rgba(221, 51, 51, 0.62);
+  box-shadow: 0 0 0 3px rgba(221, 51, 51, 0.11), 0 18px 30px rgba(16, 24, 32, 0.12);
 }
 
 .kp-car.is-unavailable {
-  opacity: 0.76;
+  opacity: 0.74;
 }
 
-.kp-car__image-wrap img {
+.kp-car__media {
+  position: relative;
+}
+
+.kp-car__brand {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.89);
+  border-radius: 999px;
+  padding: 4px 9px 4px 5px;
+  backdrop-filter: blur(8px);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #2b3448;
+}
+
+.kp-car__media img {
   width: 100%;
-  height: 130px;
+  height: 164px;
   object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid #d8dde8;
+  border-radius: 12px;
+  border: 1px solid #d7deea;
   display: block;
+}
+
+.kp-car__price-tag {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  border-radius: 10px;
+  background: rgba(20, 24, 28, 0.86);
+  color: #fff;
+  padding: 7px 10px;
+  display: grid;
+  gap: 2px;
+}
+
+.kp-car__price-tag small {
+  font-size: 0.64rem;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.kp-car__price-tag strong {
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 .kp-car__content {
   display: grid;
-  gap: 7px;
+  gap: 9px;
   align-content: start;
 }
 
@@ -488,13 +638,14 @@
 
 .kp-car__head h3 {
   margin: 0;
-  font-size: 0.98rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
 }
 
-.kp-car__content p {
+.kp-car__plate {
   margin: 0;
   color: var(--kp-muted);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .kp-car__status {
@@ -518,25 +669,44 @@
 
 .kp-car__prices {
   display: grid;
-  gap: 2px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kp-car__prices article {
+  border: 1px solid #dbe1ee;
+  border-radius: 11px;
+  background: #fff;
+  padding: 7px 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.kp-car__prices span {
+  color: #5a657d;
+  font-size: 0.7rem;
+}
+
+.kp-car__prices strong {
   color: var(--kp-red-dark);
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.76rem;
+  line-height: 1.4;
 }
 
 .kp-chip-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
 }
 
 .kp-chip-list span {
-  border: 1px solid #dce1ec;
+  border: 1px solid #d8deea;
   border-radius: 999px;
-  background: #fafbfd;
-  padding: 4px 8px;
-  font-size: 0.72rem;
-  color: #44506b;
+  background: linear-gradient(180deg, #fff, #f7f9fd);
+  padding: 5px 9px;
+  font-size: 0.71rem;
+  color: #43506a;
+  font-weight: 600;
 }
 
 .kp-warning {
@@ -928,8 +1098,12 @@
     grid-template-columns: 1fr;
   }
 
-  .kp-car__image-wrap img {
-    height: 180px;
+  .kp-car__media img {
+    height: 190px;
+  }
+
+  .kp-car__prices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -969,8 +1143,16 @@
     align-items: stretch;
   }
 
-  .kp-field--brand-filter {
-    min-width: auto;
+  .kp-brand-pill {
+    min-width: 124px;
+  }
+
+  .kp-car__media img {
+    height: 170px;
+  }
+
+  .kp-car__prices {
+    grid-template-columns: 1fr;
   }
 
   .kp-car-scroll {
