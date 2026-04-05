@@ -507,7 +507,10 @@
   background:
     radial-gradient(circle at 0% 0%, rgba(221, 51, 51, 0.06), transparent 22%),
     linear-gradient(180deg, #fbfcff, #f6f8fc);
-  overflow: visible;
+  max-height: min(62vh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: 12px;
 }
 
@@ -1181,5 +1184,9 @@
 
   .kp-car__prices {
     grid-template-columns: 1fr;
+  }
+
+  .kp-car-scroll {
+    max-height: 56vh;
   }
 }
