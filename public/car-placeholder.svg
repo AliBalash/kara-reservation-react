@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-label="car placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7f9fd"/>
+      <stop offset="100%" stop-color="#e8edf6"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2b3447"/>
+      <stop offset="100%" stop-color="#1d2432"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg)" />
+  <circle cx="220" cy="90" r="120" fill="#ffffff" opacity="0.55" />
+  <circle cx="1110" cy="640" r="170" fill="#ffffff" opacity="0.45" />
+
+  <g transform="translate(220,250)">
+    <rect x="70" y="140" width="700" height="120" rx="44" fill="url(#car)" />
+    <path d="M170 140h430l110-95H300c-44 0-84 20-109 55Z" fill="url(#car)" />
+    <circle cx="230" cy="275" r="70" fill="#212a3c" />
+    <circle cx="630" cy="275" r="70" fill="#212a3c" />
+    <circle cx="230" cy="275" r="34" fill="#d2dae8" />
+    <circle cx="630" cy="275" r="34" fill="#d2dae8" />
+    <rect x="335" y="72" width="185" height="52" rx="14" fill="#dce4f3" />
+  </g>
+
+  <text x="640" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" fill="#44506a">
+    تصویر خودرو در دسترس نیست
+  </text>
+</svg>
