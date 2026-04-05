@@ -5,7 +5,6 @@ import {
   API_BASE,
   createReservation,
   fetchBootstrap,
-  fetchBrands,
   fetchCars,
   fetchQuote,
   isValidationApiError,
@@ -31,7 +30,7 @@ const STEPS = [
   {
     id: 1,
     title: "انتخاب خودرو",
-    subtitle: "مشاهده همه ماشین‌ها + فیلتر برند",
+    subtitle: "نمایش کامل خودروها و انتخاب مستقیم",
   },
   {
     id: 2,
@@ -42,44 +41,26 @@ const STEPS = [
 
 const PHONE_REGEX = /^\+\d{8,15}$/;
 
-const BRAND_SLUG_MAP = {
-  astonmartin: "astonmartin",
-  audi: "audi",
-  bentley: "bentley",
-  bmw: "bmw",
-  bugatti: "bugatti",
-  cadillac: "cadillac",
-  chevrolet: "chevrolet",
-  dodge: "dodge",
-  ferrari: "ferrari",
-  fiat: "fiat",
-  ford: "ford",
-  gmc: "gmc",
-  honda: "honda",
-  hyundai: "hyundai",
-  infiniti: "infiniti",
-  jaguar: "jaguar",
-  jeep: "jeep",
-  kia: "kia",
-  lamborghini: "lamborghini",
-  landrover: "landrover",
-  lexus: "lexus",
-  maserati: "maserati",
-  maybach: "mercedes",
-  mclaren: "mclaren",
-  mercedes: "mercedes",
-  mercedesbenz: "mercedes",
-  mini: "mini",
-  mitsubishi: "mitsubishi",
-  nissan: "nissan",
-  peugeot: "peugeot",
-  porsche: "porsche",
-  renault: "renault",
-  rollsroyce: "rollsroyce",
-  tesla: "tesla",
-  toyota: "toyota",
-  volkswagen: "volkswagen",
-  volvo: "volvo",
+const BRAND_LOGO_PATHS = {
+  bentley: "/brand-logos/bentley.svg",
+  benz: "/brand-logos/benz.svg",
+  bmw: "/brand-logos/bmw.svg",
+  cadillac: "/brand-logos/cadillac.svg",
+  chevrolet: "/brand-logos/chevrolet.svg",
+  citroen: "/brand-logos/citroen.svg",
+  ford: "/brand-logos/ford.svg",
+  hyundai: "/brand-logos/hyundai.svg",
+  jetour: "/brand-logos/jetour.svg",
+  kia: "/brand-logos/kia.svg",
+  lamborghini: "/brand-logos/lamborghini.svg",
+  landrover: "/brand-logos/landrover.svg",
+  mazda: "/brand-logos/mazda.svg",
+  mitsubishi: "/brand-logos/mitsubishi.svg",
+  nissan: "/brand-logos/nissan.svg",
+  rangerover: "/brand-logos/rangerover.svg",
+  rollsroyce: "/brand-logos/rollsroyce.svg",
+  suzuki: "/brand-logos/suzuki.svg",
+  toyota: "/brand-logos/toyota.svg",
 };
 
 const FIELD_KEY_MAP = {
@@ -336,12 +317,10 @@ function brandMonogram(brand) {
   return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
 }
 
-function brandLogoUrl(brand) {
+function brandLogoPath(brand) {
   const normalized = normalizeBrandKey(brand);
   if (!normalized) return "";
-
-  const slug = BRAND_SLUG_MAP[normalized] || normalized;
-  return `https://cdn.simpleicons.org/${encodeURIComponent(slug)}/111111`;
+  return BRAND_LOGO_PATHS[normalized] || "";
 }
 
 function App() {
@@ -353,10 +332,7 @@ function App() {
   const [submitSuccess, setSubmitSuccess] = useState(null);
 
   const [bootstrapData, setBootstrapData] = useState(null);
-  const [brands, setBrands] = useState([]);
   const [cars, setCars] = useState([]);
-
-  const [carBrandFilter, setCarBrandFilter] = useState("");
 
   const [isBootstrapLoading, setBootstrapLoading] = useState(true);
   const [isCarsLoading, setCarsLoading] = useState(false);
@@ -369,21 +345,6 @@ function App() {
   const fallbackCarImage = useMemo(() => fallbackImageUrl(), []);
 
   const locationOptions = bootstrapData?.location_options || [];
-  const brandOptions = useMemo(() => {
-    const set = new Set();
-
-    (brands || []).forEach((brand) => {
-      const normalized = String(brand || "").trim();
-      if (normalized) set.add(normalized);
-    });
-
-    (cars || []).forEach((car) => {
-      const normalized = String(car?.car_model?.brand || "").trim();
-      if (normalized) set.add(normalized);
-    });
-
-    return Array.from(set).sort((left, right) => left.localeCompare(right));
-  }, [brands, cars]);
 
   const addonServices = useMemo(() => {
     if (!bootstrapData?.services) return [];
@@ -480,15 +441,11 @@ function App() {
       setBootstrapLoading(true);
 
       try {
-        const [bootstrapPayload, brandsPayload] = await Promise.all([
-          fetchBootstrap(controller.signal),
-          fetchBrands(controller.signal),
-        ]);
+        const bootstrapPayload = await fetchBootstrap(controller.signal);
 
         if (!isMounted) return;
 
         setBootstrapData(bootstrapPayload);
-        setBrands(brandsPayload || []);
         setSubmitError("");
       } catch (error) {
         if (controller.signal.aborted) return;
@@ -515,7 +472,6 @@ function App() {
     fetchCars(
       {
         modelId: null,
-        brand: carBrandFilter || null,
         pickupDate: form.pickupDate || null,
         returnDate: form.returnDate || null,
       },
@@ -543,7 +499,7 @@ function App() {
       });
 
     return () => controller.abort();
-  }, [bootstrapData, carBrandFilter, form.pickupDate, form.returnDate]);
+  }, [bootstrapData, form.pickupDate, form.returnDate]);
 
   useEffect(() => {
     if (!canRequestQuote) {
@@ -795,7 +751,6 @@ function App() {
     setSubmitError("");
     setSubmitSuccess(null);
     setQuote(null);
-    setCarBrandFilter("");
   }
 
   if (isBootstrapLoading) {
@@ -1012,77 +967,31 @@ function App() {
               <article className="kp-panel" id="step-cars">
                 <header className="kp-panel__head">
                   <h2>مرحله ۲: انتخاب خودرو</h2>
-                  <p>ابتدا همه خودروها نمایش داده می‌شود و در صورت نیاز می‌توانید فقط بر اساس برند فیلتر کنید.</p>
+                  <p>
+                    همه خودروها با لوگوی برند و جزئیات کامل نمایش داده می‌شود. کافی است خودرو
+                    موردنظر را انتخاب کنید.
+                  </p>
                 </header>
 
-                <div className="kp-filter-row">
-                  <div className="kp-filter-row__head">
-                    <h3>انتخاب سریع برند</h3>
-                    <p>با لمس لوگوی هر برند، لیست خودروها فیلتر می‌شود.</p>
-                  </div>
-
-                  <div className="kp-filter-meta">
-                    <strong>{cars.length}</strong>
-                    <span>خودرو برای نمایش</span>
-                  </div>
-                </div>
-
-                <div className="kp-brand-rail" role="tablist" aria-label="فیلتر برند خودرو">
-                  <button
-                    type="button"
-                    className={`kp-brand-pill ${!carBrandFilter ? "is-active" : ""}`}
-                    onClick={() => setCarBrandFilter("")}
-                  >
-                    <span className="kp-brand-logo kp-brand-logo--all">
-                      <b>ALL</b>
-                    </span>
-                    <span className="kp-brand-pill__text">همه برندها</span>
-                  </button>
-
-                  {brandOptions.map((brand) => {
-                    const active = normalizeBrandKey(brand) === normalizeBrandKey(carBrandFilter);
-                    const logo = brandLogoUrl(brand);
-
-                    return (
-                      <button
-                        key={brand}
-                        type="button"
-                        className={`kp-brand-pill ${active ? "is-active" : ""}`}
-                        onClick={() => setCarBrandFilter(brand)}
-                      >
-                        <span className="kp-brand-logo">
-                          <b>{brandMonogram(brand)}</b>
-                          {logo ? (
-                            <img
-                              src={logo}
-                              alt=""
-                              loading="lazy"
-                              onError={(event) => {
-                                event.currentTarget.style.opacity = "0";
-                              }}
-                            />
-                          ) : null}
-                        </span>
-                        <span className="kp-brand-pill__text">{brand}</span>
-                      </button>
-                    );
-                  })}
+                <div className="kp-filter-meta">
+                  <strong>{cars.length}</strong>
+                  <span>خودرو برای نمایش</span>
                 </div>
 
                 <div className="kp-car-scroll">
                   {isCarsLoading ? (
                     <p className="kp-muted">در حال دریافت لیست خودروها...</p>
                   ) : cars.length === 0 ? (
-                    <div className="kp-empty">خودرویی برای این فیلتر پیدا نشد.</div>
+                    <div className="kp-empty">در حال حاضر خودرویی برای نمایش موجود نیست.</div>
                   ) : (
                     <div className="kp-car-list">
-                      {cars.map((car) => {
+                      {cars.map((car, cardIndex) => {
                         const isSelected = String(form.selectedCarId) === String(car.id);
                         const isAvailable = car.is_available_for_selection !== false;
                         const brand = car.car_model?.brand || "";
                         const model = car.car_model?.model || "";
                         const title = `${brand} ${model}`.trim();
-                        const logo = brandLogoUrl(brand);
+                        const logo = brandLogoPath(brand);
 
                         const chips = [
                           car.options?.gear
@@ -1101,6 +1010,7 @@ function App() {
                             className={`kp-car ${isSelected ? "is-selected" : ""} ${
                               !isAvailable ? "is-unavailable" : ""
                             }`}
+                            style={{ "--kp-card-index": cardIndex % 12 }}
                           >
                             <div className="kp-car__media">
                               <div className="kp-car__brand">
