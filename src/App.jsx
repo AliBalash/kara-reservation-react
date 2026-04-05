@@ -42,6 +42,46 @@ const STEPS = [
 
 const PHONE_REGEX = /^\+\d{8,15}$/;
 
+const BRAND_SLUG_MAP = {
+  astonmartin: "astonmartin",
+  audi: "audi",
+  bentley: "bentley",
+  bmw: "bmw",
+  bugatti: "bugatti",
+  cadillac: "cadillac",
+  chevrolet: "chevrolet",
+  dodge: "dodge",
+  ferrari: "ferrari",
+  fiat: "fiat",
+  ford: "ford",
+  gmc: "gmc",
+  honda: "honda",
+  hyundai: "hyundai",
+  infiniti: "infiniti",
+  jaguar: "jaguar",
+  jeep: "jeep",
+  kia: "kia",
+  lamborghini: "lamborghini",
+  landrover: "landrover",
+  lexus: "lexus",
+  maserati: "maserati",
+  maybach: "mercedes",
+  mclaren: "mclaren",
+  mercedes: "mercedes",
+  mercedesbenz: "mercedes",
+  mini: "mini",
+  mitsubishi: "mitsubishi",
+  nissan: "nissan",
+  peugeot: "peugeot",
+  porsche: "porsche",
+  renault: "renault",
+  rollsroyce: "rollsroyce",
+  tesla: "tesla",
+  toyota: "toyota",
+  volkswagen: "volkswagen",
+  volvo: "volvo",
+};
+
 const FIELD_KEY_MAP = {
   selected_car_id: "selectedCarId",
   pickup_location: "pickupLocation",
@@ -279,6 +319,31 @@ function getErrorText(error) {
   return "مقدار وارد شده معتبر نیست.";
 }
 
+function normalizeBrandKey(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function brandMonogram(brand) {
+  const parts = String(brand || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) return "KR";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+}
+
+function brandLogoUrl(brand) {
+  const normalized = normalizeBrandKey(brand);
+  if (!normalized) return "";
+
+  const slug = BRAND_SLUG_MAP[normalized] || normalized;
+  return `https://cdn.simpleicons.org/${encodeURIComponent(slug)}/111111`;
+}
+
 function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [currentStep, setCurrentStep] = useState(0);
@@ -304,6 +369,21 @@ function App() {
   const fallbackCarImage = useMemo(() => fallbackImageUrl(), []);
 
   const locationOptions = bootstrapData?.location_options || [];
+  const brandOptions = useMemo(() => {
+    const set = new Set();
+
+    (brands || []).forEach((brand) => {
+      const normalized = String(brand || "").trim();
+      if (normalized) set.add(normalized);
+    });
+
+    (cars || []).forEach((car) => {
+      const normalized = String(car?.car_model?.brand || "").trim();
+      if (normalized) set.add(normalized);
+    });
+
+    return Array.from(set).sort((left, right) => left.localeCompare(right));
+  }, [brands, cars]);
 
   const addonServices = useMemo(() => {
     if (!bootstrapData?.services) return [];
@@ -936,25 +1016,57 @@ function App() {
                 </header>
 
                 <div className="kp-filter-row">
-                  <label className="kp-field kp-field--brand-filter">
-                    <span>فیلتر برند (اختیاری)</span>
-                    <select
-                      value={carBrandFilter}
-                      onChange={(event) => setCarBrandFilter(event.target.value)}
-                    >
-                      <option value="">همه برندها</option>
-                      {brands.map((brand) => (
-                        <option key={brand} value={brand}>
-                          {brand}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <div className="kp-filter-row__head">
+                    <h3>انتخاب سریع برند</h3>
+                    <p>با لمس لوگوی هر برند، لیست خودروها فیلتر می‌شود.</p>
+                  </div>
 
                   <div className="kp-filter-meta">
                     <strong>{cars.length}</strong>
                     <span>خودرو برای نمایش</span>
                   </div>
+                </div>
+
+                <div className="kp-brand-rail" role="tablist" aria-label="فیلتر برند خودرو">
+                  <button
+                    type="button"
+                    className={`kp-brand-pill ${!carBrandFilter ? "is-active" : ""}`}
+                    onClick={() => setCarBrandFilter("")}
+                  >
+                    <span className="kp-brand-logo kp-brand-logo--all">
+                      <b>ALL</b>
+                    </span>
+                    <span className="kp-brand-pill__text">همه برندها</span>
+                  </button>
+
+                  {brandOptions.map((brand) => {
+                    const active = normalizeBrandKey(brand) === normalizeBrandKey(carBrandFilter);
+                    const logo = brandLogoUrl(brand);
+
+                    return (
+                      <button
+                        key={brand}
+                        type="button"
+                        className={`kp-brand-pill ${active ? "is-active" : ""}`}
+                        onClick={() => setCarBrandFilter(brand)}
+                      >
+                        <span className="kp-brand-logo">
+                          <b>{brandMonogram(brand)}</b>
+                          {logo ? (
+                            <img
+                              src={logo}
+                              alt=""
+                              loading="lazy"
+                              onError={(event) => {
+                                event.currentTarget.style.opacity = "0";
+                              }}
+                            />
+                          ) : null}
+                        </span>
+                        <span className="kp-brand-pill__text">{brand}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div className="kp-car-scroll">
@@ -967,7 +1079,10 @@ function App() {
                       {cars.map((car) => {
                         const isSelected = String(form.selectedCarId) === String(car.id);
                         const isAvailable = car.is_available_for_selection !== false;
-                        const title = `${car.car_model?.brand || ""} ${car.car_model?.model || ""}`.trim();
+                        const brand = car.car_model?.brand || "";
+                        const model = car.car_model?.model || "";
+                        const title = `${brand} ${model}`.trim();
+                        const logo = brandLogoUrl(brand);
 
                         const chips = [
                           car.options?.gear
@@ -987,7 +1102,24 @@ function App() {
                               !isAvailable ? "is-unavailable" : ""
                             }`}
                           >
-                            <div className="kp-car__image-wrap">
+                            <div className="kp-car__media">
+                              <div className="kp-car__brand">
+                                <span className="kp-brand-logo">
+                                  <b>{brandMonogram(brand)}</b>
+                                  {logo ? (
+                                    <img
+                                      src={logo}
+                                      alt=""
+                                      loading="lazy"
+                                      onError={(event) => {
+                                        event.currentTarget.style.opacity = "0";
+                                      }}
+                                    />
+                                  ) : null}
+                                </span>
+                                <span>{brand || "Brand"}</span>
+                              </div>
+
                               <img
                                 src={car.primary_image_url || fallbackCarImage}
                                 alt={title || "Car"}
@@ -997,6 +1129,11 @@ function App() {
                                   }
                                 }}
                               />
+
+                              <div className="kp-car__price-tag">
+                                <small>شروع قیمت روزانه</small>
+                                <strong>{formatMoney(car.pricing?.short)} AED</strong>
+                              </div>
                             </div>
 
                             <div className="kp-car__content">
@@ -1007,12 +1144,21 @@ function App() {
                                 </span>
                               </div>
 
-                              <p>پلاک: {car.plate_number || "—"}</p>
+                              <p className="kp-car__plate">پلاک: {car.plate_number || "—"}</p>
 
                               <div className="kp-car__prices">
-                                <span>۱-۶ روز: {formatMoney(car.pricing?.short)} AED</span>
-                                <span>۷-۲۷ روز: {formatMoney(car.pricing?.mid)} AED</span>
-                                <span>۲۸+ روز: {formatMoney(car.pricing?.long)} AED</span>
+                                <article>
+                                  <span>۱ تا ۶ روز</span>
+                                  <strong>{formatMoney(car.pricing?.short)} AED</strong>
+                                </article>
+                                <article>
+                                  <span>۷ تا ۲۷ روز</span>
+                                  <strong>{formatMoney(car.pricing?.mid)} AED</strong>
+                                </article>
+                                <article>
+                                  <span>۲۸ روز به بالا</span>
+                                  <strong>{formatMoney(car.pricing?.long)} AED</strong>
+                                </article>
                               </div>
 
                               <div className="kp-chip-list">
