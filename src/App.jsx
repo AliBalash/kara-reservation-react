@@ -62,6 +62,7 @@ const BRAND_LOGO_PATHS = {
   suzuki: "/brand-logos/suzuki.svg",
   toyota: "/brand-logos/toyota.svg",
 };
+const DEFAULT_BRAND_LOGO = "/brand-logos/default.svg";
 
 const FIELD_KEY_MAP = {
   selected_car_id: "selectedCarId",
@@ -304,17 +305,6 @@ function normalizeBrandKey(value) {
   return String(value || "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
-}
-
-function brandMonogram(brand) {
-  const parts = String(brand || "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (parts.length === 0) return "KR";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
 }
 
 function brandLogoPath(brand) {
@@ -991,7 +981,7 @@ function App() {
                         const brand = car.car_model?.brand || "";
                         const model = car.car_model?.model || "";
                         const title = `${brand} ${model}`.trim();
-                        const logo = brandLogoPath(brand);
+                        const logo = brandLogoPath(brand) || DEFAULT_BRAND_LOGO;
 
                         const chips = [
                           car.options?.gear
@@ -1015,17 +1005,16 @@ function App() {
                             <div className="kp-car__media">
                               <div className="kp-car__brand">
                                 <span className="kp-brand-logo">
-                                  <b>{brandMonogram(brand)}</b>
-                                  {logo ? (
-                                    <img
-                                      src={logo}
-                                      alt=""
-                                      loading="lazy"
-                                      onError={(event) => {
-                                        event.currentTarget.style.opacity = "0";
-                                      }}
-                                    />
-                                  ) : null}
+                                  <img
+                                    src={logo}
+                                    alt={`${brand || "car"} logo`}
+                                    loading="lazy"
+                                    onError={(event) => {
+                                      if (!event.currentTarget.src.includes(DEFAULT_BRAND_LOGO)) {
+                                        event.currentTarget.src = DEFAULT_BRAND_LOGO;
+                                      }
+                                    }}
+                                  />
                                 </span>
                                 <span>{brand || "Brand"}</span>
                               </div>

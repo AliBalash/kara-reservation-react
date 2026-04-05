@@ -488,35 +488,18 @@
   border-radius: 10px;
   border: 1px solid #d6ddeb;
   background: linear-gradient(150deg, #fff, #edf1f8);
-  position: relative;
-  display: grid;
-  place-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-}
-
-.kp-brand-logo b {
-  font-size: 0.67rem;
-  color: #3e4a64;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
 .kp-brand-logo img {
-  position: absolute;
-  inset: 5px;
-  width: calc(100% - 10px);
-  height: calc(100% - 10px);
+  width: 76%;
+  height: 76%;
   object-fit: contain;
-  transition: opacity 0.2s ease;
-}
-
-.kp-brand-logo--all {
-  border: 0;
-  background: linear-gradient(140deg, var(--kp-charcoal), #2f3540);
-}
-
-.kp-brand-logo--all b {
-  color: #fff;
+  display: block;
 }
 
 .kp-filter-meta strong {
@@ -542,8 +525,10 @@
 
 .kp-car-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  max-width: 980px;
+  margin: 0 auto;
 }
 
 .kp-car {
