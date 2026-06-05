@@ -1,19 +1,24 @@
 # Kara Reservation React
 
-Modern step-by-step reservation frontend built with React + Vite.
-
-This app replaces the old Laravel/Livewire reservation page and consumes CRM APIs directly from `kara-panel`.
+Kara Reservation React is a React and Vite reservation frontend built for a multi-step car-booking experience with RTL support and direct CRM API integration. It replaces a traditional server-rendered reservation page with a more interactive client-side flow.
 
 ## Highlights
 
-- 5-step wizard with full RTL responsive UI
-- Live quote calculation from CRM (`/quote`) with debounce
-- Dynamic brand/model/car loading from API
-- Validation on both frontend and API response (422 mapping to fields)
-- Final contract creation in CRM (`POST /api/public/reservations`)
-- Date/time picker UX optimized for reservation flow
+- Step-based reservation wizard
+- RTL-friendly responsive UI
+- Real-time quote calculation against CRM endpoints
+- Dynamic brand, model, and vehicle loading
+- Validation feedback mapped from API responses
+- Final reservation creation through public CRM APIs
 
-## Required CRM APIs
+## Tech Stack
+
+- React
+- Vite
+- JavaScript
+- RTL UI patterns
+
+## Required Backend Endpoints
 
 - `GET /api/public/reservations/bootstrap`
 - `GET /api/public/reservations/brands`
@@ -22,30 +27,35 @@ This app replaces the old Laravel/Livewire reservation page and consumes CRM API
 - `POST /api/public/reservations/quote`
 - `POST /api/public/reservations`
 
-## Environment
+## Getting Started
 
 ```bash
+npm install
 cp .env.example .env
+npm run dev
 ```
 
-Default (Docker CRM HTTPS endpoint):
+## Environment Variables
+
+- `VITE_API_BASE_URL`
+
+Example default:
 
 ```env
 VITE_API_BASE_URL=https://127.0.0.1:18001/api/public/reservations
 ```
 
-If your browser blocks local self-signed SSL, open `https://127.0.0.1:18001` once and allow it.
-
-## Development
-
-```bash
-npm install
-npm run dev
-```
-
-## Production Build
+## Build
 
 ```bash
 npm run build
 npm run preview
 ```
+
+## Positioning
+
+This repository is a focused frontend portfolio piece for reservation UX and CRM integration rather than a complete standalone product.
+
+## Author
+
+Developed by Ali Balash.
