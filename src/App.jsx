@@ -14,11 +14,33 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const MENU_ITEMS = [
   { label: "کاراپلاس", href: "https://karaplusrental.com/", external: true },
-  { label: "همه خودروها", href: "#step-cars", external: false },
+  { label: "همه خودروها", href: "https://karaplusrental.com/all-cars/", external: true },
   { label: "سوالات متداول", href: "https://karaplusrental.com/faqs/", external: true },
   { label: "مقالات", href: "https://karaplusrental.com/blog/", external: true },
   { label: "درباره ما", href: "https://karaplusrental.com/about-us/", external: true },
   { label: "تماس با ما", href: "https://karaplusrental.com/contact-us/", external: true },
+];
+
+const PRICE_MENU_ITEMS = [
+  {
+    label: "خودروهای اقتصادی",
+    href: "https://karaplusrental.com/product-group/economic-cars/",
+  },
+  {
+    label: "خودروهای پریمیوم",
+    href: "https://karaplusrental.com/product-group/premium-cars/",
+  },
+  {
+    label: "خودروهای لوکس",
+    href: "https://karaplusrental.com/product-group/luxury-cars/",
+  },
+];
+
+const INFO_LINKS = [
+  { label: "درباره ما", href: "https://karaplusrental.com/about-us/" },
+  { label: "سوالات متداول", href: "https://karaplusrental.com/faqs/" },
+  { label: "پروفایل کاربری", href: "https://karaplusrental.com/my-account/" },
+  { label: "تماس با ما", href: "https://karaplusrental.com/contact-us/" },
 ];
 
 const STEPS = [
@@ -383,15 +405,6 @@ function insuranceTierPrice(selectedCar, insuranceId, rentalDays) {
   return Number(source.short || 0);
 }
 
-function scrollToHash(href) {
-  if (!href.startsWith("#")) return;
-
-  const target = document.querySelector(href);
-  if (target) {
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-}
-
 function getErrorText(error) {
   if (!error) return "";
   if (typeof error === "string") return error;
@@ -413,6 +426,7 @@ function brandLogoPath(brand) {
 function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
@@ -999,6 +1013,10 @@ function App() {
     resetCarFilters();
   }
 
+  function closeMobileMenu() {
+    setMobileMenuOpen(false);
+  }
+
   if (isBootstrapLoading) {
     return (
       <main className="kp-page kp-page--loading" dir="rtl">
@@ -1013,42 +1031,103 @@ function App() {
 
   return (
     <main className="kp-page" dir="rtl">
-      <header className="kp-header">
-        <div className="kp-header__inner">
-          <a className="kp-logo" href="https://karaplusrental.com/" target="_blank" rel="noreferrer">
-            <img
-              src="https://karaplusrental.com/wp-content/uploads/2023/10/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%AE%D9%88%D8%AF%D8%B1%D9%88-1.png"
-              alt="Kara Plus"
-            />
-            <span>کاراپلاس</span>
-          </a>
-
-          <nav className="kp-nav">
-            {MENU_ITEMS.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={(event) => {
-                  if (!item.external) {
-                    event.preventDefault();
-                    scrollToHash(item.href);
-                  }
-                }}
-                target={item.external ? "_blank" : undefined}
-                rel={item.external ? "noreferrer" : undefined}
-              >
-                {item.label}
+      <header className="header fixed kp-theme-header">
+        <div className="header-wrapper">
+          <div className="kp-theme-container">
+            <div className="logo">
+              <a href="https://karaplusrental.com" target="_blank" rel="noreferrer">
+                <img
+                  src="https://karaplusrental.com/wp-content/uploads/2023/10/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%AE%D9%88%D8%AF%D8%B1%D9%88-1.png"
+                  alt="کارا پلاس"
+                />
               </a>
-            ))}
-          </nav>
+            </div>
 
-          <button
-            type="button"
-            className="kp-header__cta"
-            onClick={() => scrollToHash("#request-form")}
-          >
-            ثبت درخواست
-          </button>
+            <button
+              type="button"
+              className="menu-toggle btn btn-theme-transparent"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="باز و بسته کردن منو"
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span className="kp-theme-icon">☰</span>
+            </button>
+
+            <nav className={`navigation clearfix ${isMobileMenuOpen ? "opened" : "closed"}`}>
+              <div className="swiper-wrapper">
+                <div className="swiper-slide">
+                  <button
+                    type="button"
+                    className="menu-toggle-close btn"
+                    onClick={closeMobileMenu}
+                    aria-label="بستن منو"
+                  >
+                    <span className="kp-theme-icon">✕</span>
+                  </button>
+
+                  <nav
+                    id="ubermenu-main-118-rentit_topmenu-2"
+                    className="ubermenu ubermenu-nojs ubermenu-main ubermenu-menu-118 ubermenu-loc-rentit_topmenu ubermenu-responsive ubermenu-responsive-default ubermenu-responsive-nocollapse ubermenu-horizontal ubermenu-transition-shift ubermenu-trigger-hover_intent ubermenu-skin-minimal ubermenu-bar-align-full ubermenu-items-align-center ubermenu-bound ubermenu-disable-submenu-scroll ubermenu-sub-indicators ubermenu-retractors-responsive ubermenu-submenu-indicator-closes"
+                  >
+                    <ul id="ubermenu-nav-main-118-rentit_topmenu" className="ubermenu-nav" data-title="Main Menu">
+                      <li className="ubermenu-item ubermenu-item-level-0 ubermenu-column ubermenu-column-auto ubermenu-current-menu-item">
+                        <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href={MENU_ITEMS[0].href} target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                          <span className="ubermenu-target-title ubermenu-target-text">{MENU_ITEMS[0].label}</span>
+                        </a>
+                      </li>
+                      <li className="ubermenu-item ubermenu-item-level-0 ubermenu-column ubermenu-column-auto">
+                        <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href={MENU_ITEMS[1].href} target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                          <span className="ubermenu-target-title ubermenu-target-text">{MENU_ITEMS[1].label}</span>
+                        </a>
+                      </li>
+                      <li className="ubermenu-item ubermenu-item-level-0 ubermenu-column ubermenu-column-auto ubermenu-item-has-children ubermenu-has-submenu-drop ubermenu-has-submenu-flyout ubermenu-submenu-rtl ubermenu-submenu-reverse">
+                        <span className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only">
+                          <span className="ubermenu-target-title ubermenu-target-text">سطوح قیمتی خودروها</span>
+                          <span className="ubermenu-sub-indicator">⌄</span>
+                        </span>
+                        <ul className="ubermenu-submenu ubermenu-submenu-type-flyout ubermenu-submenu-drop ubermenu-submenu-align-right_edge_item ubermenu-submenu-retractor-top">
+                          {PRICE_MENU_ITEMS.map((item) => (
+                            <li key={item.label} className="ubermenu-item ubermenu-item-auto ubermenu-item-normal ubermenu-item-level-1">
+                              <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href={item.href} target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                                <span className="ubermenu-target-title ubermenu-target-text">{item.label}</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                      {MENU_ITEMS.slice(2).map((item) => (
+                        <li key={item.label} className="ubermenu-item ubermenu-item-level-0 ubermenu-column ubermenu-column-auto">
+                          <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href={item.href} target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                            <span className="ubermenu-target-title ubermenu-target-text">{item.label}</span>
+                          </a>
+                        </li>
+                      ))}
+                      <li className="ubermenu-item ubermenu-item-level-0 ubermenu-column ubermenu-column-auto ubermenu-item-has-children ubermenu-has-submenu-drop ubermenu-has-submenu-flyout kp-account-item">
+                        <a className="ubermenu-target ubermenu-target-with-image ubermenu-item-layout-default ubermenu-item-layout-image_only" href="https://karaplusrental.com/my-account/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                          <img
+                            className="ubermenu-image ubermenu-image-size-variation_swatches_image_size"
+                            src="https://karaplusrental.com/wp-content/uploads/2023/10/prof-50x50.png"
+                            width="20"
+                            height="20"
+                            alt="لوگوی ثبت نام و ورود به سایت کارا پلاس"
+                          />
+                          <span className="ubermenu-sub-indicator">⌄</span>
+                        </a>
+                        <ul className="ubermenu-submenu ubermenu-submenu-type-flyout ubermenu-submenu-drop ubermenu-submenu-align-left_edge_item ubermenu-submenu-retractor-top">
+                          <li className="ubermenu-item ubermenu-item-auto ubermenu-item-normal ubermenu-item-level-1">
+                            <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href="https://karaplusrental.com/login/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                              <span className="ubermenu-target-title ubermenu-target-text">ورود / ثبت نام</span>
+                            </a>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+              <div className="swiper-scrollbar" />
+            </nav>
+          </div>
         </div>
       </header>
 
@@ -1744,6 +1823,105 @@ function App() {
           </aside>
         </form>
       )}
+
+      <footer className="footer">
+        <div className="footer-widgets">
+          <div className="kp-theme-container">
+            <div className="kp-theme-row">
+              <div className="widget-odd widget-first widget-1 kp-col-md-3">
+                <div className="widget">
+                  <a href="https://karaplusrental.com/" target="_blank" rel="noreferrer">
+                    <img
+                      src="https://karaplusrental.com/wp-content/uploads/2023/10/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%AE%D9%88%D8%AF%D8%B1%D9%88-1.png"
+                      className="image wp-image-13954 attachment-full size-full"
+                      alt="اجاره خودرو"
+                    />
+                  </a>
+                </div>
+              </div>
+
+              <div className="widget-even widget-2 kp-col-md-3">
+                <div className="widget">
+                  <h4 className="widget-title">درباره ما</h4>
+                  <p>
+                    شرکت کارا پلاس با هدف تسهیل شرایط اجاره خودرو برای ایرانیان در خارج از کشور
+                    در سال ۲۰۲۲ در کشور امارات متحده عربی ، شهر دبی تاسیس شده است.
+                  </p>
+                  <p>
+                    اين مجموعه در تلاش است تا با ارتقاء سطح خودروهاي تحت مالكيت خود از اقتصادي
+                    تا تشريفاتي و بهره گيري از روش هاي مدرن ارائه خدمات، شرايط حمل و نقل آسان و
+                    سريع را در دسترس همه افراد قرار دهد.
+                  </p>
+                  <ul className="social-icons" />
+                </div>
+              </div>
+
+              <div className="widget-odd widget-3 kp-col-md-3">
+                <div className="widget">
+                  <div className="widget-categories">
+                    <h4 className="widget-title">اطلاعات</h4>
+                    <div className="menu-information-container">
+                      <ul id="menu-information" className="menu">
+                        {INFO_LINKS.map((item) => (
+                          <li key={item.label} className="menu-item">
+                            <a href={item.href} target="_blank" rel="noreferrer">
+                              {item.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="widget-even widget-last widget-4 footerNews kp-col-md-3">
+                <div className="widget">
+                  <h4 className="widget-title">خبر نامه</h4>
+                  <div className="textwidget">
+                    <p>
+                      در خبرنامه کارا پلاس شما از آخرین تغییرات قیمت، تخفیفات، خودروهای جدید شرکت
+                      و کلیه اخبار مرتبط با حوزه اجاره خودرو در این مجموعه اطلاع حاصل می نمایید.
+                    </p>
+                    <form onSubmit={(event) => event.preventDefault()}>
+                      <div className="khabarname">
+                        <p>
+                          <span className="wpcf7-form-control-wrap">
+                            <input
+                              size="40"
+                              maxLength="400"
+                              className="wpcf7-form-control wpcf7-email wpcf7-validates-as-required wpcf7-text wpcf7-validates-as-email khabar placeholder"
+                              placeholder="Enter your Email Here"
+                              type="email"
+                              dir="ltr"
+                            />
+                          </span>
+                          <input
+                            className="wpcf7-form-control wpcf7-submit has-spinner khabarSubmit"
+                            type="submit"
+                            value="عضویت"
+                          />
+                        </p>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="footer-meta">
+          <div className="kp-theme-container">
+            <div className="kp-theme-row">
+              <div className="kp-col-sm-12">
+                <p className="btn-row text-center" />
+                <div className="copyright">© 2016 Rent It — An Rental Car Theme made with passion by airamlou.ir</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
