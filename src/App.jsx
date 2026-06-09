@@ -1,6 +1,5 @@
+import { DateTimePicker } from "@mantine/dates";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { format } from "date-fns";
-import DatePicker from "react-datepicker";
 import {
   API_BASE,
   createReservation,
@@ -10,7 +9,6 @@ import {
   isValidationApiError,
 } from "./api";
 import "./App.css";
-import "react-datepicker/dist/react-datepicker.css";
 
 const MENU_ITEMS = [
   { label: "کاراپلاس", href: "https://karaplusrental.com/", external: true },
@@ -175,6 +173,46 @@ const EMPTY_FORM = {
   acceptTerms: false,
 };
 
+const DATE_TIME_PICKER_CLASS_NAMES = {
+  wrapper: "kp-date-picker__wrapper",
+  input: "kp-date-picker__input",
+  section: "kp-date-picker__section",
+  dropdown: "kp-date-picker__dropdown",
+  calendarHeader: "kp-date-picker__header",
+  calendarHeaderControl: "kp-date-picker__header-control",
+  calendarHeaderControlIcon: "kp-date-picker__header-control-icon",
+  calendarHeaderLevel: "kp-date-picker__header-level",
+  weekday: "kp-date-picker__weekday",
+  day: "kp-date-picker__day",
+  monthCell: "kp-date-picker__month-cell",
+  timeWrapper: "kp-date-picker__time-wrapper",
+  timeInput: "kp-date-picker__time-input",
+  submitButton: "kp-date-picker__submit",
+};
+
+const TIME_PICKER_CLASS_NAMES = {
+  fieldsRoot: "kp-time-picker__root",
+  fieldsGroup: "kp-time-picker__fields-group",
+  field: "kp-time-picker__field",
+  dropdown: "kp-time-picker__dropdown",
+  control: "kp-time-picker__control",
+  controlsListGroup: "kp-time-picker__controls-group",
+};
+
+const DATE_TIME_PICKER_TIME_PROPS = {
+  withDropdown: true,
+  format: "24h",
+  minutesStep: 30,
+  hoursInputLabel: "ساعت",
+  minutesInputLabel: "دقیقه",
+  classNames: TIME_PICKER_CLASS_NAMES,
+  popoverProps: {
+    withinPortal: true,
+    position: "bottom-start",
+    offset: 10,
+  },
+};
+
 function formatMoney(value) {
   const amount = Number(value || 0);
   return new Intl.NumberFormat("en-US", {
@@ -187,10 +225,6 @@ function parseApiDateTime(value) {
   if (!value) return new Date("");
   const normalized = String(value).replace(" ", "T");
   return new Date(normalized);
-}
-
-function toApiDateTime(value) {
-  return format(value, "yyyy-MM-dd HH:mm:ss");
 }
 
 function formatDateTime(value) {
@@ -207,20 +241,9 @@ function formatDateTime(value) {
   });
 }
 
-function dayStart(baseDate) {
-  return new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 0, 0, 0);
-}
-
-function dayEnd(baseDate) {
-  return new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 23, 59, 59);
-}
-
-function isSameDay(left, right) {
-  return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
-  );
+function getCalendarDropdownType() {
+  if (typeof window === "undefined") return "popover";
+  return window.matchMedia("(max-width: 767px)").matches ? "modal" : "popover";
 }
 
 function normalizeValidationErrors(errorBag = {}) {
@@ -449,6 +472,7 @@ function App() {
 
   const [quote, setQuote] = useState(null);
   const quoteAbortRef = useRef(null);
+  const [calendarDropdownType, setCalendarDropdownType] = useState(getCalendarDropdownType);
 
   const fallbackCarImage = useMemo(() => fallbackImageUrl(), []);
 
@@ -579,29 +603,13 @@ function App() {
   );
 
   const pickupDateValue = useMemo(() => parseApiDateTime(form.pickupDate), [form.pickupDate]);
-  const returnDateValue = useMemo(() => parseApiDateTime(form.returnDate), [form.returnDate]);
 
   const minPickupAt = useMemo(() => {
     const parsed = parseApiDateTime(bootstrapData?.min_pickup_at || "");
     return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
   }, [bootstrapData?.min_pickup_at]);
 
-  const pickupDateForTime = !Number.isNaN(pickupDateValue.getTime()) ? pickupDateValue : minPickupAt;
-  const pickupMinTime = isSameDay(pickupDateForTime, minPickupAt) ? minPickupAt : dayStart(pickupDateForTime);
-  const pickupMaxTime = dayEnd(pickupDateForTime);
-
-  const returnDateForTime = !Number.isNaN(returnDateValue.getTime())
-    ? returnDateValue
-    : !Number.isNaN(pickupDateValue.getTime())
-      ? pickupDateValue
-      : minPickupAt;
-
   const hasValidPickup = !Number.isNaN(pickupDateValue.getTime());
-  const returnMinTime =
-    hasValidPickup && isSameDay(returnDateForTime, pickupDateValue)
-      ? pickupDateValue
-      : dayStart(returnDateForTime);
-  const returnMaxTime = dayEnd(returnDateForTime);
 
   const rentalDays = useMemo(() => {
     if (!form.pickupDate || !form.returnDate) return 1;
@@ -637,6 +645,23 @@ function App() {
     () => Math.round(((currentStep + 1) / STEPS.length) * 100),
     [currentStep]
   );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const syncDropdownType = (event) => {
+      setCalendarDropdownType(event.matches ? "modal" : "popover");
+    };
+
+    syncDropdownType(mediaQuery);
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", syncDropdownType);
+      return () => mediaQuery.removeEventListener("change", syncDropdownType);
+    }
+
+    mediaQuery.addListener(syncDropdownType);
+    return () => mediaQuery.removeListener(syncDropdownType);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1219,36 +1244,62 @@ function App() {
                 <div className="kp-grid kp-grid--two">
                   <label className="kp-field">
                     <span>تاریخ و ساعت تحویل</span>
-                    <DatePicker
-                      selected={!Number.isNaN(pickupDateValue.getTime()) ? pickupDateValue : null}
-                      onChange={(value) => updateField("pickupDate", value ? toApiDateTime(value) : "")}
-                      showTimeSelect
-                      timeIntervals={30}
-                      dateFormat="yyyy/MM/dd HH:mm"
+                    <DateTimePicker
+                      className="kp-date-picker"
+                      classNames={DATE_TIME_PICKER_CLASS_NAMES}
+                      value={form.pickupDate || null}
+                      onChange={(value) => updateField("pickupDate", value || "")}
+                      valueFormat="YYYY/MM/DD - HH:mm"
+                      weekdayFormat="dd"
+                      clearable
+                      error={Boolean(errors.pickupDate)}
+                      dropdownType={calendarDropdownType}
+                      popoverProps={{
+                        withinPortal: true,
+                        position: "bottom-start",
+                        offset: 10,
+                      }}
+                      modalProps={{
+                        centered: true,
+                        title: "انتخاب زمان تحویل",
+                        size: "lg",
+                      }}
+                      timePickerProps={DATE_TIME_PICKER_TIME_PROPS}
                       minDate={minPickupAt}
-                      minTime={pickupMinTime}
-                      maxTime={pickupMaxTime}
-                      className="kp-date-input"
-                      placeholderText="انتخاب زمان تحویل"
-                      autoComplete="off"
+                      defaultDate={!Number.isNaN(pickupDateValue.getTime()) ? pickupDateValue : minPickupAt}
+                      placeholder="انتخاب زمان تحویل"
+                      submitButtonProps={{ "aria-label": "تایید زمان تحویل" }}
                     />
                     <small className="kp-error">{getErrorText(errors.pickupDate)}</small>
                   </label>
 
                   <label className="kp-field">
                     <span>تاریخ و ساعت بازگشت</span>
-                    <DatePicker
-                      selected={!Number.isNaN(returnDateValue.getTime()) ? returnDateValue : null}
-                      onChange={(value) => updateField("returnDate", value ? toApiDateTime(value) : "")}
-                      showTimeSelect
-                      timeIntervals={30}
-                      dateFormat="yyyy/MM/dd HH:mm"
+                    <DateTimePicker
+                      className="kp-date-picker"
+                      classNames={DATE_TIME_PICKER_CLASS_NAMES}
+                      value={form.returnDate || null}
+                      onChange={(value) => updateField("returnDate", value || "")}
+                      valueFormat="YYYY/MM/DD - HH:mm"
+                      weekdayFormat="dd"
+                      clearable
+                      error={Boolean(errors.returnDate)}
+                      dropdownType={calendarDropdownType}
+                      popoverProps={{
+                        withinPortal: true,
+                        position: "bottom-start",
+                        offset: 10,
+                      }}
+                      modalProps={{
+                        centered: true,
+                        title: "انتخاب زمان بازگشت",
+                        size: "lg",
+                      }}
+                      timePickerProps={DATE_TIME_PICKER_TIME_PROPS}
                       minDate={hasValidPickup ? pickupDateValue : minPickupAt}
-                      minTime={returnMinTime}
-                      maxTime={returnMaxTime}
-                      className="kp-date-input"
-                      placeholderText="انتخاب زمان بازگشت"
-                      autoComplete="off"
+                      defaultDate={hasValidPickup ? pickupDateValue : minPickupAt}
+                      placeholder="انتخاب زمان بازگشت"
+                      submitButtonProps={{ "aria-label": "تایید زمان بازگشت" }}
                     />
                     <small className="kp-error">{getErrorText(errors.returnDate)}</small>
                   </label>
@@ -1806,6 +1857,18 @@ function App() {
                   <span>بیمه</span>
                   <strong>{formatMoney(quote?.insurance_total)} AED</strong>
                 </div>
+                {Number(quote?.driver_cost || 0) > 0 ? (
+                  <div>
+                    <span>راننده</span>
+                    <strong>{formatMoney(quote?.driver_cost)} AED</strong>
+                  </div>
+                ) : null}
+                {Number(quote?.driving_license_cost || 0) > 0 ? (
+                  <div>
+                    <span>گواهینامه</span>
+                    <strong>{formatMoney(quote?.driving_license_cost)} AED</strong>
+                  </div>
+                ) : null}
                 <div>
                   <span>انتقال</span>
                   <strong>{formatMoney(quote?.transfer_costs?.total)} AED</strong>
