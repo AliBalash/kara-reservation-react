@@ -11,7 +11,7 @@ export default function KaraHeader({ open, onToggle, onClose }) {
     <header className="kara-header">
       <div className="kara-header__inner">
         <a className="kara-header__brand" href="https://newsite.karaplus.ae/" aria-label="Kara Plus home">
-          <img src="/kara-plus-logo.webp" alt="Kara Plus Rent a Car" width="187" height="90" />
+          <img src="/kara-plus-logo.png" alt="Kara Plus Rent a Car" width="1536" height="1024" />
         </a>
         <button className="kara-menu-button" type="button" onClick={onToggle} aria-expanded={open} aria-controls="kara-navigation" aria-label="Toggle navigation">
           <span /><span /><span />

@@ -1019,7 +1019,7 @@ function App() {
             <div className="logo">
               <a href="https://newsite.karaplus.ae/" target="_blank" rel="noreferrer">
                 <img
-                  src="/kara-plus-logo.webp"
+                  src="/kara-plus-logo.png"
                   alt="Kara Plus Rent a Car"
                 />
               </a>
@@ -1088,7 +1088,7 @@ function App() {
                         <a className="ubermenu-target ubermenu-target-with-image ubermenu-item-layout-default ubermenu-item-layout-image_only" href="https://newsite.karaplus.ae/contact/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
                           <img
                             className="ubermenu-image ubermenu-image-size-variation_swatches_image_size"
-                            src="/kara-plus-logo.webp"
+                            src="/kara-plus-logo.png"
                             width="20"
                             height="20"
                             alt="لوگوی ثبت نام و ورود به سایت کارا پلاس"
@@ -1803,7 +1803,7 @@ function App() {
                 <div className="widget">
                   <a href="https://newsite.karaplus.ae/" target="_blank" rel="noreferrer">
                     <img
-                      src="/kara-plus-logo.webp"
+                      src="/kara-plus-logo.png"
                       className="image wp-image-13954 attachment-full size-full"
                       alt="اجاره خودرو"
                     />
