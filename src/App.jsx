@@ -404,6 +404,8 @@ function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sameLocation, setSameLocation] = useState(true);
+  const [bootstrapRetry, setBootstrapRetry] = useState(0);
+  const [bootstrapError, setBootstrapError] = useState("");
 
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
@@ -628,10 +630,11 @@ function App() {
         if (!isMounted) return;
 
         setBootstrapData(bootstrapPayload);
+        setBootstrapError("");
         setSubmitError("");
       } catch (error) {
         if (controller.signal.aborted) return;
-        setSubmitError(
+        setBootstrapError(
           `We could not load reservation details: ${toPersianErrorText(
             error.message,
             "Please check your connection and try again."
@@ -648,7 +651,7 @@ function App() {
       isMounted = false;
       controller.abort();
     };
-  }, []);
+  }, [bootstrapRetry]);
 
   useEffect(() => {
     if (!bootstrapData) return;
@@ -1006,6 +1009,22 @@ function App() {
           <h2>Preparing your reservation</h2>
           <p>Loading live vehicle and location details…</p>
         </section>
+      </main>
+    );
+  }
+
+  if (bootstrapError) {
+    return (
+      <main className="kp-page" dir="ltr">
+        <KaraHeader open={isMobileMenuOpen} onToggle={() => setMobileMenuOpen((value) => !value)} onClose={closeMobileMenu} />
+        <ReservationHero />
+        <section className="kp-start-error" role="alert">
+          <p className="kp-start-error__eyebrow">Reservation service unavailable</p>
+          <h2>We could not start your reservation</h2>
+          <p>{bootstrapError}</p>
+          <button type="button" className="kp-btn kp-btn--primary" onClick={() => setBootstrapRetry((value) => value + 1)}>Try again</button>
+        </section>
+        <KaraFooter />
       </main>
     );
   }
