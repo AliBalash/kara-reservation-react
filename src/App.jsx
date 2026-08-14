@@ -1768,7 +1768,7 @@ function App() {
                 </div>
                 <div>
                   <span>Rental duration</span>
-                  <strong>{rentalDays} days</strong>
+                  <strong>{rentalDays}-day rental</strong>
                 </div>
               </div>
 
