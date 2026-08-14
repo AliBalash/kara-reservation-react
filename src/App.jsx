@@ -380,7 +380,7 @@ function insuranceTierPrice(selectedCar, insuranceId, rentalDays) {
 function getErrorText(error) {
   if (!error) return "";
   if (typeof error === "string") return error;
-  return "مقدار وارد شده معتبر نیست.";
+  return "Please enter a valid value.";
 }
 
 function normalizeBrandKey(value) {
@@ -628,9 +628,9 @@ function App() {
       } catch (error) {
         if (controller.signal.aborted) return;
         setSubmitError(
-          `خطا در دریافت اطلاعات اولیه: ${toPersianErrorText(
+          `We could not load reservation details: ${toPersianErrorText(
             error.message,
-            "ارتباط با API برقرار نشد."
+            "Please check your connection and try again."
           )}`
         );
       } finally {
@@ -676,9 +676,9 @@ function App() {
       .catch((error) => {
         if (controller.signal.aborted) return;
         setSubmitError(
-          `خطا در دریافت لیست خودروها: ${toPersianErrorText(
+          `We could not load vehicles: ${toPersianErrorText(
             error.message,
-            "دریافت داده خودروها انجام نشد."
+            "Please try again in a moment."
           )}`
         );
       })
@@ -714,16 +714,16 @@ function App() {
 
         if (isValidationApiError(error)) {
           setErrors((prev) => ({ ...prev, ...normalizeValidationErrors(error.errors) }));
-          setSubmitError("برخی اطلاعات واردشده معتبر نیست. لطفا موارد مشخص‌شده را اصلاح کنید.");
+          setSubmitError("Please review the highlighted fields and try again.");
           setQuote(null);
           return;
         }
 
         setQuote(null);
         setSubmitError(
-          `خطا در محاسبه قیمت: ${toPersianErrorText(
+          `We could not update your estimate: ${toPersianErrorText(
             error.message,
-            "محاسبه قیمت با خطا مواجه شد."
+            "Please try again."
           )}`
         );
       } finally {
@@ -842,17 +842,17 @@ function App() {
     const nextErrors = {};
 
     if (stepIndex === 0) {
-      if (!form.pickupDate) nextErrors.pickupDate = "تاریخ و ساعت تحویل را انتخاب کنید.";
-      if (!form.returnDate) nextErrors.returnDate = "تاریخ و ساعت بازگشت را انتخاب کنید.";
-      if (!form.pickupLocation) nextErrors.pickupLocation = "محل تحویل را انتخاب کنید.";
-      if (!form.returnLocation) nextErrors.returnLocation = "محل بازگشت را انتخاب کنید.";
+      if (!form.pickupDate) nextErrors.pickupDate = "Choose a pick-up date and time.";
+      if (!form.returnDate) nextErrors.returnDate = "Choose a return date and time.";
+      if (!form.pickupLocation) nextErrors.pickupLocation = "Choose a pick-up location.";
+      if (!form.returnLocation) nextErrors.returnLocation = "Choose a return location.";
 
       if (form.pickupDate) {
         const pickup = parseApiDateTime(form.pickupDate);
         if (Number.isNaN(pickup.getTime())) {
-          nextErrors.pickupDate = "فرمت تاریخ تحویل معتبر نیست.";
+          nextErrors.pickupDate = "Choose a valid pick-up date and time.";
         } else if (pickup < minPickupAt) {
-          nextErrors.pickupDate = "زمان تحویل باید از زمان فعلی بزرگ‌تر باشد.";
+          nextErrors.pickupDate = "Pick-up must be after the earliest available time.";
         }
       }
 
@@ -860,18 +860,18 @@ function App() {
         const pickup = parseApiDateTime(form.pickupDate).getTime();
         const returned = parseApiDateTime(form.returnDate).getTime();
         if (pickup >= returned) {
-          nextErrors.returnDate = "تاریخ بازگشت باید بعد از تاریخ تحویل باشد.";
+          nextErrors.returnDate = "Return must be after pick-up.";
         }
       }
     }
 
     if (stepIndex === 1) {
       if (!form.selectedCarId) {
-        nextErrors.selectedCarId = "یک خودرو برای رزرو انتخاب کنید.";
+        nextErrors.selectedCarId = "Select a vehicle to continue.";
       }
 
       if (selectedCar && selectedCar.is_available_for_selection === false) {
-        nextErrors.selectedCarId = "این خودرو در بازه زمانی انتخاب‌شده در دسترس نیست.";
+        nextErrors.selectedCarId = "This vehicle is unavailable for your selected dates.";
       }
     }
 
