@@ -188,7 +188,7 @@ function formatDateTime(value) {
   const parsed = parseApiDateTime(value);
   if (Number.isNaN(parsed.getTime())) return value;
 
-  return parsed.toLocaleString("fa-IR", {
+  return parsed.toLocaleString("en-AE", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -417,6 +417,7 @@ function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [currentStep, setCurrentStep] = useState(0);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sameLocation, setSameLocation] = useState(true);
 
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
@@ -764,7 +765,11 @@ function App() {
   }
 
   function updateField(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "pickupLocation" && sameLocation ? { returnLocation: value } : {}),
+    }));
     clearFieldError(field);
     setSubmitError("");
   }
@@ -1200,13 +1205,13 @@ function App() {
             {currentStep === 0 ? (
               <article className="kp-panel" id="step-schedule">
                 <header className="kp-panel__head">
-                  <h2>مرحله ۱: زمان و مسیر</h2>
-                  <p>تاریخ و ساعت تحویل/بازگشت و لوکیشن‌ها را مشخص کنید.</p>
+                  <h2>Plan Your Rental</h2>
+                  <p>Set your pick-up and return times, then choose where you would like to collect your vehicle.</p>
                 </header>
 
                 <div className="kp-grid kp-grid--two">
                   <label className="kp-field">
-                    <span>تاریخ و ساعت تحویل</span>
+                    <span>Pick-up date & time</span>
                     <DatePicker
                       selected={!Number.isNaN(pickupDateValue.getTime()) ? pickupDateValue : null}
                       onChange={(value) => updateField("pickupDate", value ? toApiDateTime(value) : "")}
@@ -1217,14 +1222,14 @@ function App() {
                       minTime={pickupMinTime}
                       maxTime={pickupMaxTime}
                       className="kp-date-input"
-                      placeholderText="انتخاب زمان تحویل"
+                      placeholderText="Select pick-up time"
                       autoComplete="off"
                     />
                     <small className="kp-error">{getErrorText(errors.pickupDate)}</small>
                   </label>
 
                   <label className="kp-field">
-                    <span>تاریخ و ساعت بازگشت</span>
+                    <span>Return date & time</span>
                     <DatePicker
                       selected={!Number.isNaN(returnDateValue.getTime()) ? returnDateValue : null}
                       onChange={(value) => updateField("returnDate", value ? toApiDateTime(value) : "")}
@@ -1235,19 +1240,19 @@ function App() {
                       minTime={returnMinTime}
                       maxTime={returnMaxTime}
                       className="kp-date-input"
-                      placeholderText="انتخاب زمان بازگشت"
+                      placeholderText="Select return time"
                       autoComplete="off"
                     />
                     <small className="kp-error">{getErrorText(errors.returnDate)}</small>
                   </label>
 
                   <label className="kp-field">
-                    <span>محل تحویل</span>
+                    <span>Pick-up location</span>
                     <select
                       value={form.pickupLocation}
                       onChange={(event) => updateField("pickupLocation", event.target.value)}
                     >
-                      <option value="">انتخاب کنید...</option>
+                      <option value="">Choose a location</option>
                       {locationOptions.map((location) => (
                         <option key={location} value={location}>
                           {location}
@@ -1258,12 +1263,13 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>محل بازگشت</span>
+                    <span>Return location</span>
                     <select
                       value={form.returnLocation}
+                      disabled={sameLocation}
                       onChange={(event) => updateField("returnLocation", event.target.value)}
                     >
-                      <option value="">انتخاب کنید...</option>
+                      <option value="">Choose a location</option>
                       {locationOptions.map((location) => (
                         <option key={location} value={location}>
                           {location}
@@ -1273,6 +1279,15 @@ function App() {
                     <small className="kp-error">{getErrorText(errors.returnLocation)}</small>
                   </label>
                 </div>
+                <label className="kp-same-location">
+                  <input type="checkbox" checked={sameLocation} onChange={(event) => {
+                    const enabled = event.target.checked;
+                    setSameLocation(enabled);
+                    if (enabled) updateField("pickupLocation", form.pickupLocation);
+                  }} />
+                  <span>Return to the same location</span>
+                </label>
+                {form.pickupDate && form.returnDate ? <p className="kp-rental-duration">{rentalDays}-day rental</p> : null}
               </article>
             ) : null}
 
