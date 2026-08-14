@@ -100,65 +100,74 @@
 .kp-hero {
   position: relative;
   overflow: hidden;
-  background: var(--kp-black);
-  min-height: 258px;
-  padding: 54px max(20px, calc((100% - 1160px) / 2));
+  min-height: 465px;
+  padding: 7% 10% 6% 7%;
+  background: #111 url("https://newsite.karaplus.ae/wp-content/uploads/2026/07/G3.webp") center / cover no-repeat;
   color: #fff;
 }
-.kp-hero__motion { position:absolute; z-index:0; top:0; right:0; width:min(42%,460px); height:100%; object-fit:cover; object-position:center; opacity:.34; }
 .kp-hero:after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, #171715 35%, rgba(23, 23, 21, 0.76));
-  opacity: 0.96;
+  background: url("https://newsite.karaplus.ae/wp-content/uploads/2026/06/bg-trans.png") center / cover no-repeat;
+  opacity: 0.5;
   z-index: 1;
 }
 .kp-hero__overlay {
-  position: absolute;
-  inset: auto 0 0;
-  height: 4px;
-  background: var(--kp-gold);
-  z-index: 3;
+  display: none;
 }
 .kp-hero__content {
   position: relative;
   z-index: 2;
-  max-width: 660px;
-}
-.kp-hero__kicker {
-  margin: 0 0 10px;
-  color: var(--kp-gold);
-  letter-spacing: 0.13em;
-  font-size: 0.72rem;
-  font-weight: 800;
+  max-width: 850px;
 }
 .kp-hero h1 {
   margin: 0;
   color: #fff;
-  font-size: clamp(2rem, 4vw, 3.25rem);
-  line-height: 1.08;
+  font-size: clamp(2.25rem, 4.35vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1.22;
 }
-.kp-hero p {
-  max-width: 600px;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.65;
-}
+.kp-hero h1 span { display: block; }
 .kp-hero__trust {
   display: flex;
   flex-wrap: wrap;
-  gap: 17px;
+  gap: 24px;
   padding: 0;
-  margin: 21px 0 0;
+  margin: 18px 0 25px;
   list-style: none;
-  color: var(--kp-gold);
-  font-size: 0.83rem;
-  font-weight: 700;
+  color: #d8f4db;
+  font-size: 1rem;
+  font-weight: 600;
 }
 .kp-hero__trust li:before {
   content: "✓";
-  margin-right: 7px;
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--kp-gold);
+  color: #443a15;
+  font-size: 0.8rem;
+  font-weight: 800;
 }
+.kp-hero__reservation-link {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  padding: 11px 23px;
+  border: 1px solid #443a15;
+  border-radius: 10px;
+  background: #d8f4db;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.kp-hero__reservation-link:hover,
+.kp-hero__reservation-link:focus-visible { background: #fff; }
 .kp-shell {
   width: min(1240px, calc(100% - 40px));
   margin: 40px auto 0;
@@ -809,13 +818,12 @@
     width: fit-content;
   }
   .kp-hero {
-    min-height: 245px;
-    padding: 45px 20px;
+    min-height: 410px;
+    padding: 72px 28px 55px;
+    background-position: 62% center;
   }
-  .kp-hero__motion { width:48%; opacity:.24; }
-  .kp-hero:after {
-    background: linear-gradient(105deg, #171715 35%, rgba(23, 23, 21, 0.76));
-  }
+  .kp-hero h1 { font-size: clamp(2rem, 10vw, 2.65rem); }
+  .kp-hero__trust { gap: 11px 16px; font-size: .9rem; }
   .kp-shell {
     width: min(100% - 28px, 1240px);
     margin-top: 23px;
