@@ -849,10 +849,11 @@
 @media (max-width: 760px) {
   .kara-header__inner {
     width: min(100% - 28px, 1240px);
-    min-height: 68px;
+    min-height: 72px;
   }
   .kara-header__brand img {
-    width: 106px;
+    width: 112px;
+    height: 64px;
   }
   .kara-menu-button {
     display: block;
@@ -860,7 +861,7 @@
   .kara-navigation {
     display: none;
     position: absolute;
-    inset: 68px 0 auto;
+    inset: 72px 0 auto;
     padding: 20px 14px 24px;
     background: var(--kp-black);
     border-bottom: 1px solid rgba(249, 230, 163, 0.22);
@@ -870,9 +871,8 @@
     display: grid;
     gap: 18px;
   }
-  .kara-navigation__cta {
-    width: fit-content;
-  }
+  .kara-navigation a { height: auto; padding: 4px 8px; color: #fff; }
+  .kara-navigation a:after { right: 8px; left: 8px; }
   .kp-hero {
     min-height: 410px;
     padding: 72px 28px 55px;
