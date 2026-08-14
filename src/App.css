@@ -92,13 +92,14 @@
   padding: 54px max(20px, calc((100% - 1160px) / 2));
   color: #fff;
 }
-.kp-hero__motion { position:absolute; z-index:0; top:0; right:0; width:min(42%,460px); height:100%; object-fit:cover; opacity:.76; mix-blend-mode:screen; }
+.kp-hero__motion { position:absolute; z-index:0; top:0; right:0; width:min(42%,460px); height:100%; object-fit:cover; object-position:center; opacity:.34; }
 .kp-hero:after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(105deg, #171715 35%, rgba(23, 23, 21, 0.76));
   opacity: 0.96;
+  z-index: 1;
 }
 .kp-hero__overlay {
   position: absolute;
@@ -108,7 +109,7 @@
 }
 .kp-hero__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 660px;
 }
 .kp-hero__kicker {
@@ -238,6 +239,7 @@
 .kp-step.is-done .kp-step__index {
   border-color: var(--kp-gold-deep);
   background: var(--kp-gold);
+  z-index: 3;
   color: var(--kp-black);
 }
 .kp-panel {
@@ -777,7 +779,7 @@
     min-height: 245px;
     padding: 45px 20px;
   }
-  .kp-hero__motion { width:48%; opacity:.52; }
+  .kp-hero__motion { width:48%; opacity:.24; }
   .kp-hero:after {
     background: linear-gradient(105deg, #171715 35%, rgba(23, 23, 21, 0.76));
   }
