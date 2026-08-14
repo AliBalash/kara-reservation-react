@@ -1512,13 +1512,13 @@ function App() {
             {currentStep === 2 ? (
               <article className="kp-panel" id="step-final">
                 <header className="kp-panel__head">
-                  <h2>مرحله ۳: اطلاعات نهایی</h2>
-                  <p>اطلاعات متقاضی را تکمیل و درخواست را ثبت کنید.</p>
+                  <h2>Your Details</h2>
+                  <p>Enter your contact details, customise your rental and send your reservation request.</p>
                 </header>
 
                 <div className="kp-grid kp-grid--two">
                   <label className="kp-field">
-                    <span>نام</span>
+                    <span>First name</span>
                     <input
                       value={form.firstName}
                       onChange={(event) => updateField("firstName", event.target.value)}
@@ -1527,7 +1527,7 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>نام خانوادگی</span>
+                    <span>Last name</span>
                     <input
                       value={form.lastName}
                       onChange={(event) => updateField("lastName", event.target.value)}
@@ -1536,7 +1536,7 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>شماره تماس</span>
+                    <span>Phone number</span>
                     <input
                       dir="ltr"
                       value={form.phone}
@@ -1547,7 +1547,7 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>شماره پیام‌رسان</span>
+                    <span>WhatsApp / Messenger number</span>
                     <input
                       dir="ltr"
                       value={form.messengerPhone}
@@ -1560,7 +1560,7 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>کد ملی / شناسه</span>
+                    <span>National ID / Identification</span>
                     <input
                       value={form.nationalCode}
                       onChange={(event) => updateField("nationalCode", event.target.value)}
@@ -1569,7 +1569,7 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>ملیت</span>
+                    <span>Nationality</span>
                     <input
                       value={form.nationality}
                       onChange={(event) => updateField("nationality", event.target.value)}
@@ -1578,7 +1578,7 @@ function App() {
                   </label>
 
                   <label className="kp-field kp-field--full">
-                    <span>ایمیل (اختیاری)</span>
+                    <span>Email (optional)</span>
                     <input
                       dir="ltr"
                       value={form.email}
@@ -1590,11 +1590,11 @@ function App() {
                 </div>
 
                 <details className="kp-optional" open={false}>
-                  <summary>گزینه‌های تکمیلی (اختیاری)</summary>
+                  <summary>Customize Your Rental</summary>
 
                   <div className="kp-grid kp-grid--two">
                     <div>
-                      <h3 className="kp-subtitle">خدمات جانبی</h3>
+                      <h3 className="kp-subtitle">Additional services</h3>
                       <div className="kp-service-list">
                         {addonServices.map((service) => {
                           const checked = form.selectedServices.includes(service.id);
@@ -1621,7 +1621,7 @@ function App() {
                       </div>
 
                       <label className="kp-field kp-field--inline">
-                        <span>تعداد صندلی کودک</span>
+                        <span>Child seat quantity</span>
                         <input
                           type="number"
                           min="0"
@@ -1633,7 +1633,7 @@ function App() {
                     </div>
 
                     <div>
-                      <h3 className="kp-subtitle">بیمه تکمیلی</h3>
+                      <h3 className="kp-subtitle">Additional insurance</h3>
                       <div className="kp-service-list">
                         <label
                           className={`kp-service-item ${!form.selectedInsurance ? "is-checked" : ""}`}
@@ -1645,8 +1645,8 @@ function App() {
                             onChange={() => updateField("selectedInsurance", "")}
                           />
                           <span>
-                            <strong>بدون بیمه اضافه</strong>
-                            <small>فقط بیمه پایه</small>
+                            <strong>No additional insurance</strong>
+                            <small>Base cover only</small>
                           </span>
                         </label>
 
@@ -1676,12 +1676,12 @@ function App() {
                       </div>
 
                       <label className="kp-field">
-                        <span>گزینه گواهینامه</span>
+                        <span>Driving licence option</span>
                         <select
                           value={form.drivingLicenseOption}
                           onChange={(event) => updateField("drivingLicenseOption", event.target.value)}
                         >
-                          <option value="">بدون گزینه اضافه</option>
+                          <option value="">No additional option</option>
                           {drivingLicenseOptions.map((option) => (
                             <option key={option.key} value={option.key}>
                               {option.label} ({formatMoney(option.amount)} AED)
@@ -1691,26 +1691,26 @@ function App() {
                       </label>
 
                       <label className="kp-field">
-                        <span>ساعت راننده (اختیاری)</span>
+                        <span>Chauffeur hours (optional)</span>
                         <input
                           type="number"
                           min="0"
                           step="0.5"
                           value={form.driverHours}
                           onChange={(event) => updateField("driverHours", event.target.value)}
-                          placeholder="مثلا 8"
+                          placeholder="For example, 8"
                         />
                         <small className="kp-error">{getErrorText(errors.driverHours)}</small>
                       </label>
                     </div>
 
                     <label className="kp-field kp-field--full">
-                      <span>توضیحات (اختیاری)</span>
+                        <span>Notes (optional)</span>
                       <textarea
                         rows={4}
                         value={form.notes}
                         onChange={(event) => updateField("notes", event.target.value)}
-                        placeholder="در صورت نیاز توضیح بنویسید..."
+                        placeholder="Anything we should know?"
                       />
                     </label>
                   </div>
@@ -1723,8 +1723,7 @@ function App() {
                     onChange={(event) => updateField("acceptTerms", event.target.checked)}
                   />
                   <span>
-                    شرایط رزرو و قوانین مربوط به ودیعه، جریمه‌ها و بازگشت خودرو را مطالعه کرده‌ام و
-                    می‌پذیرم.
+                    I have read and accept the reservation terms, deposit, fines and vehicle return policy.
                   </span>
                 </label>
                 <small className="kp-error">{getErrorText(errors.acceptTerms)}</small>
@@ -1738,16 +1737,16 @@ function App() {
                 onClick={goBack}
                 disabled={currentStep === 0 || isSubmitting}
               >
-                مرحله قبل
+                Back
               </button>
 
               {currentStep < STEPS.length - 1 ? (
                 <button type="button" className="kp-btn kp-btn--primary" onClick={goNext}>
-                  مرحله بعد
+                  Continue
                 </button>
               ) : (
                 <button type="submit" className="kp-btn kp-btn--primary" disabled={isSubmitting}>
-                  {isSubmitting ? "در حال ثبت درخواست..." : "ثبت درخواست"}
+                  {isSubmitting ? "Sending request…" : "Send reservation request"}
                 </button>
               )}
             </div>
@@ -1755,7 +1754,7 @@ function App() {
 
           <aside className="kp-summary">
             <section className="kp-summary__card">
-              <h3>خلاصه درخواست</h3>
+              <h3>Live Booking Summary</h3>
 
               {selectedCar ? (
                 <>
@@ -1770,43 +1769,43 @@ function App() {
                   <small>پلاک: {selectedCar.plate_number || "—"}</small>
                 </>
               ) : (
-                <p className="kp-muted">هنوز خودرویی انتخاب نشده است.</p>
+                <p className="kp-muted">Choose a vehicle to see your booking summary.</p>
               )}
 
               <div className="kp-summary__rows">
                 <div>
-                  <span>تحویل</span>
+                  <span>Pick-up</span>
                   <strong>{formatDateTime(form.pickupDate)}</strong>
                 </div>
                 <div>
-                  <span>بازگشت</span>
+                  <span>Return</span>
                   <strong>{formatDateTime(form.returnDate)}</strong>
                 </div>
                 <div>
-                  <span>مدت اجاره</span>
-                  <strong>{rentalDays} روز</strong>
+                  <span>Rental duration</span>
+                  <strong>{rentalDays} days</strong>
                 </div>
               </div>
 
               <div className="kp-summary__quote">
                 <header>
-                  <span>پیش‌فاکتور لحظه‌ای</span>
-                  {isQuoteLoading ? <small>در حال بروزرسانی...</small> : <small>به‌روز</small>}
+                  <span>Realtime estimate</span>
+                  {isQuoteLoading ? <small>Updating price…</small> : <small>Up to date</small>}
                 </header>
                 <div>
-                  <span>اجاره پایه</span>
+                  <span>Base rental</span>
                   <strong>{formatMoney(quote?.base_price)} AED</strong>
                 </div>
                 <div>
-                  <span>خدمات</span>
+                  <span>Extras</span>
                   <strong>{formatMoney(quote?.services_total)} AED</strong>
                 </div>
                 <div>
-                  <span>بیمه</span>
+                  <span>Insurance</span>
                   <strong>{formatMoney(quote?.insurance_total)} AED</strong>
                 </div>
                 <div>
-                  <span>انتقال</span>
+                  <span>Transfer</span>
                   <strong>{formatMoney(quote?.transfer_costs?.total)} AED</strong>
                 </div>
                 <div>
@@ -1814,7 +1813,7 @@ function App() {
                   <strong>{formatMoney(quote?.tax_amount)} AED</strong>
                 </div>
                 <div className="kp-summary__total">
-                  <span>جمع کل</span>
+                  <span>Estimated Total</span>
                   <strong>{formatMoney(quote?.final_total)} AED</strong>
                 </div>
               </div>
