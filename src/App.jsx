@@ -1804,6 +1804,10 @@ function App() {
               </div>
             </section>
           </aside>
+          <div className="kp-mobile-booking-bar" aria-live="polite">
+            <div><span>Estimated total</span><strong>{quote ? `${formatMoney(quote.final_total)} AED` : "Select a car"}</strong></div>
+            <button type="submit" className="kp-btn kp-btn--primary">{currentStep === STEPS.length - 1 ? "Send request" : "Continue"}</button>
+          </div>
         </form>
       )}
 

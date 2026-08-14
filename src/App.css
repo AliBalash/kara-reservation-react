@@ -44,6 +44,7 @@
 .kara-footer a { display: block; width: fit-content; color: #fff; text-decoration: none; margin: 8px 0; }
 .kara-footer a:hover { color: #f9e6a3; }
 .kara-footer__copyright { width: min(1240px, calc(100% - 40px)); margin: 0 auto; padding: 18px 0; border-top: 1px solid rgba(255,255,255,.14); font-size: .8rem; }
+.kp-mobile-booking-bar { display: none; }
 
 @media (max-width: 760px) {
   .kara-header__inner { width: min(100% - 28px, 1240px); min-height: 68px; }
@@ -54,6 +55,12 @@
   .kara-navigation__cta { width: fit-content; }
   .kara-footer { margin-top: 48px; }
   .kara-footer__inner { width: min(100% - 40px, 1240px); grid-template-columns: 1fr; gap: 24px; padding: 40px 0 26px; }
+  .kp-page { padding-bottom: 88px; }
+  .kp-mobile-booking-bar { position: fixed; z-index: 45; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: rgba(23, 23, 21, .97); box-shadow: 0 -8px 24px rgba(0, 0, 0, .18); }
+  .kp-mobile-booking-bar div { display: grid; gap: 3px; color: #fff; }
+  .kp-mobile-booking-bar span { font-size: .72rem; color: rgba(255,255,255,.67); }
+  .kp-mobile-booking-bar strong { font-size: .95rem; }
+  .kp-mobile-booking-bar .kp-btn { min-height: 44px; padding: 9px 15px; white-space: nowrap; }
 }
 
 * {
