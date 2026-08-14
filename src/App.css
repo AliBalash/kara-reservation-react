@@ -1,10 +1,12 @@
 :root {
-  --kp-red: #dd3333;
-  --kp-red-dark: #c81921;
-  --kp-charcoal: #14181c;
-  --kp-text: #1f1f1f;
-  --kp-muted: #5c5c5c;
-  --kp-bg: #f4f5f7;
+  --kp-gold: #c6a66a;
+  --kp-gold-dark: #a8874c;
+  --kp-red: var(--kp-gold);
+  --kp-red-dark: var(--kp-gold-dark);
+  --kp-charcoal: #171715;
+  --kp-text: #25231f;
+  --kp-muted: #716e67;
+  --kp-bg: #f7f6f2;
   --kp-surface: #ffffff;
   --kp-line: #e4e7ee;
   --kp-success: #138b4f;
@@ -26,14 +28,11 @@
 .kp-page {
   min-height: 100vh;
   color: var(--kp-text);
-  background:
-    radial-gradient(circle at 9% -10%, rgba(221, 51, 51, 0.14), transparent 34%),
-    radial-gradient(circle at 90% 0%, rgba(20, 24, 28, 0.09), transparent 30%),
-    var(--kp-bg);
+  background: var(--kp-bg);
 }
 
 .kp-topbar {
-  background: #c81921;
+  background: var(--kp-charcoal);
   color: #fff;
   text-align: center;
   font-size: 0.92rem;

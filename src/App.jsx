@@ -13,51 +13,41 @@ import "./App.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 const MENU_ITEMS = [
-  { label: "کاراپلاس", href: "https://karaplusrental.com/", external: true },
-  { label: "همه خودروها", href: "https://karaplusrental.com/all-cars/", external: true },
-  { label: "سوالات متداول", href: "https://karaplusrental.com/faqs/", external: true },
-  { label: "مقالات", href: "https://karaplusrental.com/blog/", external: true },
-  { label: "درباره ما", href: "https://karaplusrental.com/about-us/", external: true },
-  { label: "تماس با ما", href: "https://karaplusrental.com/contact-us/", external: true },
+  { label: "Home", href: "https://newsite.karaplus.ae/" },
+  { label: "All Cars", href: "https://newsite.karaplus.ae/cars/" },
+  { label: "Blog", href: "https://newsite.karaplus.ae/blog/" },
+  { label: "About Us", href: "https://newsite.karaplus.ae/about-us/" },
+  { label: "Contact", href: "https://newsite.karaplus.ae/contact/" },
 ];
 
 const PRICE_MENU_ITEMS = [
-  {
-    label: "خودروهای اقتصادی",
-    href: "https://karaplusrental.com/product-group/economic-cars/",
-  },
-  {
-    label: "خودروهای پریمیوم",
-    href: "https://karaplusrental.com/product-group/premium-cars/",
-  },
-  {
-    label: "خودروهای لوکس",
-    href: "https://karaplusrental.com/product-group/luxury-cars/",
-  },
+  { label: "Economy Cars", href: "https://newsite.karaplus.ae/product-category/economy-cars/" },
+  { label: "Premium Cars", href: "https://newsite.karaplus.ae/product-category/premium-cars/" },
+  { label: "Luxury Cars", href: "https://newsite.karaplus.ae/product-category/luxury-cars/" },
 ];
 
 const INFO_LINKS = [
-  { label: "درباره ما", href: "https://karaplusrental.com/about-us/" },
-  { label: "سوالات متداول", href: "https://karaplusrental.com/faqs/" },
-  { label: "پروفایل کاربری", href: "https://karaplusrental.com/my-account/" },
-  { label: "تماس با ما", href: "https://karaplusrental.com/contact-us/" },
+  { label: "About Us", href: "https://newsite.karaplus.ae/about-us/" },
+  { label: "FAQs", href: "https://newsite.karaplus.ae/faqs/" },
+  { label: "Terms & Conditions", href: "https://newsite.karaplus.ae/terms-conditions/" },
+  { label: "Contact", href: "https://newsite.karaplus.ae/contact/" },
 ];
 
 const STEPS = [
   {
     id: 0,
-    title: "زمان و مسیر",
-    subtitle: "تاریخ و محل تحویل/بازگشت",
+    title: "Plan Your Rental",
+    subtitle: "Dates, times and locations",
   },
   {
     id: 1,
-    title: "انتخاب خودرو",
-    subtitle: "نمایش کامل خودروها و انتخاب مستقیم",
+    title: "Choose Your Car",
+    subtitle: "Find the right vehicle",
   },
   {
     id: 2,
-    title: "ثبت نهایی",
-    subtitle: "اطلاعات متقاضی و ارسال درخواست",
+    title: "Your Details",
+    subtitle: "Complete your request",
   },
 ];
 
@@ -1019,26 +1009,26 @@ function App() {
 
   if (isBootstrapLoading) {
     return (
-      <main className="kp-page kp-page--loading" dir="rtl">
+      <main className="kp-page kp-page--loading" dir="ltr">
         <section className="kp-loading">
           <div className="kp-loading__spinner" />
-          <h2>در حال بارگذاری اطلاعات رزرو</h2>
-          <p>دریافت اطلاعات خودروها از CRM...</p>
+          <h2>Preparing your reservation</h2>
+          <p>Loading live vehicle and location details…</p>
         </section>
       </main>
     );
   }
 
   return (
-    <main className="kp-page" dir="rtl">
+    <main className="kp-page" dir="ltr">
       <header className="header fixed kp-theme-header">
         <div className="header-wrapper">
           <div className="kp-theme-container">
             <div className="logo">
-              <a href="https://karaplusrental.com" target="_blank" rel="noreferrer">
+              <a href="https://newsite.karaplus.ae/" target="_blank" rel="noreferrer">
                 <img
-                  src="https://karaplusrental.com/wp-content/uploads/2023/10/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%AE%D9%88%D8%AF%D8%B1%D9%88-1.png"
-                  alt="کارا پلاس"
+                  src="/kara-plus-logo.webp"
+                  alt="Kara Plus Rent a Car"
                 />
               </a>
             </div>
@@ -1103,10 +1093,10 @@ function App() {
                         </li>
                       ))}
                       <li className="ubermenu-item ubermenu-item-level-0 ubermenu-column ubermenu-column-auto ubermenu-item-has-children ubermenu-has-submenu-drop ubermenu-has-submenu-flyout kp-account-item">
-                        <a className="ubermenu-target ubermenu-target-with-image ubermenu-item-layout-default ubermenu-item-layout-image_only" href="https://karaplusrental.com/my-account/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                        <a className="ubermenu-target ubermenu-target-with-image ubermenu-item-layout-default ubermenu-item-layout-image_only" href="https://newsite.karaplus.ae/contact/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
                           <img
                             className="ubermenu-image ubermenu-image-size-variation_swatches_image_size"
-                            src="https://karaplusrental.com/wp-content/uploads/2023/10/prof-50x50.png"
+                            src="/kara-plus-logo.webp"
                             width="20"
                             height="20"
                             alt="لوگوی ثبت نام و ورود به سایت کارا پلاس"
@@ -1115,7 +1105,7 @@ function App() {
                         </a>
                         <ul className="ubermenu-submenu ubermenu-submenu-type-flyout ubermenu-submenu-drop ubermenu-submenu-align-left_edge_item ubermenu-submenu-retractor-top">
                           <li className="ubermenu-item ubermenu-item-auto ubermenu-item-normal ubermenu-item-level-1">
-                            <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href="https://karaplusrental.com/login/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                            <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href="https://newsite.karaplus.ae/contact/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
                               <span className="ubermenu-target-title ubermenu-target-text">ورود / ثبت نام</span>
                             </a>
                           </li>
@@ -1135,11 +1125,9 @@ function App() {
         <div className="kp-hero__overlay" />
         <div className="kp-hero__content">
           <p className="kp-hero__kicker">KARA PLUS RENTAL DUBAI</p>
-          <h1>فرم رسمی ثبت درخواست اجاره خودرو</h1>
-          <p>
-            فرم به‌صورت مرحله‌ای طراحی شده است و تا فیلدهای ضروری کامل نشوند، به مرحله بعد
-            منتقل نمی‌شود.
-          </p>
+          <h1>Reserve Your Car in Dubai</h1>
+          <p>Choose your dates, select your preferred vehicle and send your reservation request in just a few steps.</p>
+          <ul className="kp-hero__trust" aria-label="Kara Plus benefits"><li>Best Price</li><li>Premium Service</li><li>24/7 Support</li></ul>
         </div>
       </section>
 
@@ -1830,9 +1818,9 @@ function App() {
             <div className="kp-theme-row">
               <div className="widget-odd widget-first widget-1 kp-col-md-3">
                 <div className="widget">
-                  <a href="https://karaplusrental.com/" target="_blank" rel="noreferrer">
+                  <a href="https://newsite.karaplus.ae/" target="_blank" rel="noreferrer">
                     <img
-                      src="https://karaplusrental.com/wp-content/uploads/2023/10/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%AE%D9%88%D8%AF%D8%B1%D9%88-1.png"
+                      src="/kara-plus-logo.webp"
                       className="image wp-image-13954 attachment-full size-full"
                       alt="اجاره خودرو"
                     />
