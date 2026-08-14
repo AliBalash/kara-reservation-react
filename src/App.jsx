@@ -1120,26 +1120,26 @@ function App() {
 
       {submitSuccess ? (
         <section className="kp-success">
-          <h2>درخواست شما با موفقیت ثبت شد</h2>
-          <p>اطلاعات داخل CRM ذخیره شد و کارشناسان کاراپلاس با شما تماس خواهند گرفت.</p>
+          <h2>Reservation Request Received</h2>
+          <p>Your request has been sent to Kara Plus. Our team will contact you shortly to confirm the next steps.</p>
 
           <div className="kp-success__meta">
             <article>
-              <span>شماره قرارداد</span>
+              <span>Contract / Request ID</span>
               <strong>#{submitSuccess.contract_id}</strong>
             </article>
             <article>
-              <span>وضعیت</span>
+              <span>Status</span>
               <strong>{submitSuccess.status}</strong>
             </article>
             <article>
-              <span>مبلغ نهایی</span>
+              <span>Estimated Final Total</span>
               <strong>{formatMoney(submitSuccess.quote?.final_total)} AED</strong>
             </article>
           </div>
 
           <button type="button" className="kp-btn kp-btn--primary" onClick={resetForm}>
-            ثبت درخواست جدید
+            Book Another Car
           </button>
         </section>
       ) : (
