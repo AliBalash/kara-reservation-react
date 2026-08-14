@@ -1157,7 +1157,7 @@ function App() {
               })}
             </div>
 
-            {submitError ? <p className="kp-alert">{submitError}</p> : null}
+            {submitError ? <p className="kp-alert" role="alert">{submitError}</p> : null}
 
             {currentStep === 0 ? (
               <article className="kp-panel" id="step-schedule">
@@ -1756,7 +1756,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="kp-summary__quote">
+              <div className="kp-summary__quote" aria-live="polite" aria-label="Live price estimate">
                 <header>
                   <span>Realtime estimate</span>
                   {isQuoteLoading ? <small>Updating price…</small> : <small>Up to date</small>}
