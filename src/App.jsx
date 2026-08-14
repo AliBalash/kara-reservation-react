@@ -98,26 +98,13 @@ const FIELD_KEY_MAP = {
   "service_quantities.child_seat": "childSeatQuantity",
 };
 
-const FIELD_LABELS_FA = {
-  selectedCarId: "خودرو",
-  pickupLocation: "محل تحویل",
-  returnLocation: "محل بازگشت",
-  pickupDate: "تاریخ تحویل",
-  returnDate: "تاریخ بازگشت",
-  selectedServices: "خدمات جانبی",
-  selectedInsurance: "بیمه",
-  drivingLicenseOption: "گزینه گواهینامه",
-  driverHours: "ساعت راننده",
-  firstName: "نام",
-  lastName: "نام خانوادگی",
-  email: "ایمیل",
-  phone: "شماره تماس",
-  messengerPhone: "شماره پیام‌رسان",
-  nationalCode: "کد ملی/شناسه",
-  nationality: "ملیت",
-  notes: "توضیحات",
-  childSeatQuantity: "تعداد صندلی کودک",
-  acceptTerms: "تایید قوانین",
+const FIELD_LABELS = {
+  selectedCarId: "vehicle", pickupLocation: "pick-up location", returnLocation: "return location",
+  pickupDate: "pick-up date", returnDate: "return date", selectedServices: "additional services",
+  selectedInsurance: "insurance", drivingLicenseOption: "driving licence option", driverHours: "chauffeur hours",
+  firstName: "first name", lastName: "last name", email: "email", phone: "phone number",
+  messengerPhone: "WhatsApp / Messenger number", nationalCode: "national ID", nationality: "nationality",
+  notes: "notes", childSeatQuantity: "child seat quantity", acceptTerms: "terms acceptance",
 };
 
 const STEP_FIELDS = {
@@ -237,74 +224,69 @@ function normalizeValidationErrors(errorBag = {}) {
   return normalized;
 }
 
-function hasPersianText(text) {
-  return /[\u0600-\u06FF]/.test(String(text || ""));
-}
-
-function fieldLabelFa(field) {
-  return FIELD_LABELS_FA[field] || "این فیلد";
+function fieldLabel(field) {
+  return FIELD_LABELS[field] || "this field";
 }
 
 function toPersianValidationMessage(message, field = "") {
   const text = String(message || "").trim();
-  if (!text) return "مقدار وارد شده معتبر نیست.";
-  if (hasPersianText(text)) return text;
+  if (!text) return "Please enter a valid value.";
 
   const conflictMatch = text.match(/already reserved from\s+(.+?)\s+to\s+(.+?)\.?$/i);
   if (conflictMatch) {
-    return `این خودرو از ${conflictMatch[1]} تا ${conflictMatch[2]} قبلا رزرو شده است.`;
+    return `This vehicle is already reserved from ${conflictMatch[1]} to ${conflictMatch[2]}.`;
   }
 
   if (/selected vehicle is not available/i.test(text)) {
-    return "خودروی انتخاب‌شده در بازه زمانی انتخابی در دسترس نیست.";
+    return "The selected vehicle is unavailable for these dates.";
   }
 
   if (/service quantity key is invalid/i.test(text)) {
-    return "کلید تعداد سرویس انتخابی معتبر نیست.";
+    return "The selected service quantity is invalid.";
   }
 
   if (/field is required/i.test(text)) {
-    return `${fieldLabelFa(field)} الزامی است.`;
+    return `Please enter your ${fieldLabel(field)}.`;
   }
 
   if (/field must be a valid email/i.test(text) || /field must be a valid email address/i.test(text)) {
-    return "ایمیل وارد شده معتبر نیست.";
+    return "Please enter a valid email address.";
   }
 
   if (/field format is invalid/i.test(text)) {
-    return `فرمت ${fieldLabelFa(field)} معتبر نیست.`;
+    return `Please check the format of your ${fieldLabel(field)}.`;
   }
 
   if (/field must be a date after/i.test(text)) {
-    return "تاریخ بازگشت باید بعد از تاریخ تحویل باشد.";
+    return "Return date and time must be after pick-up.";
   }
 
   if (/field must be a date/i.test(text)) {
-    return `فرمت ${fieldLabelFa(field)} معتبر نیست.`;
+    return `Please check the format of your ${fieldLabel(field)}.`;
   }
 
   if (/field must be an integer/i.test(text) || /field must be a number/i.test(text)) {
-    return `${fieldLabelFa(field)} باید عددی باشد.`;
+    return `${fieldLabel(field)} must be a number.`;
   }
 
   if (/field must be at least 0/i.test(text)) {
-    return `${fieldLabelFa(field)} نمی‌تواند کمتر از صفر باشد.`;
+    return `${fieldLabel(field)} cannot be less than zero.`;
   }
 
   if (/field may not be greater than/i.test(text) || /field must not be greater than/i.test(text)) {
-    return `${fieldLabelFa(field)} از حد مجاز بیشتر است.`;
+    return `${fieldLabel(field)} is above the allowed limit.`;
   }
 
   if (/The selected .* is invalid/i.test(text)) {
-    return `${fieldLabelFa(field)} انتخاب‌شده معتبر نیست.`;
+    return `The selected ${fieldLabel(field)} is invalid.`;
   }
 
-  return `${fieldLabelFa(field)} معتبر نیست.`;
+  return `Please check your ${fieldLabel(field)}.`;
 }
 
 function toPersianErrorText(message, fallback) {
   const translated = toPersianValidationMessage(message, "");
-  if (!translated || translated === "این فیلد معتبر نیست.") {
+  if (!translated || translated === "Please check your this field.") {
     return fallback;
   }
 
