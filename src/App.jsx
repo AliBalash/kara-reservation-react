@@ -11,6 +11,8 @@ import {
 } from "./api";
 import "./App.css";
 import "react-datepicker/dist/react-datepicker.css";
+import KaraFooter from "./components/KaraFooter";
+import KaraHeader from "./components/KaraHeader";
 
 const MENU_ITEMS = [
   { label: "Home", href: "https://newsite.karaplus.ae/" },
@@ -1008,6 +1010,7 @@ function App() {
 
   return (
     <main className="kp-page" dir="ltr">
+      <KaraHeader open={isMobileMenuOpen} onToggle={() => setMobileMenuOpen((value) => !value)} onClose={closeMobileMenu} />
       <header className="header fixed kp-theme-header">
         <div className="header-wrapper">
           <div className="kp-theme-container">
@@ -1902,6 +1905,7 @@ function App() {
           </div>
         </div>
       </footer>
+      <KaraFooter />
     </main>
   );
 }

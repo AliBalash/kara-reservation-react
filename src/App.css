@@ -21,6 +21,41 @@
   --kp-shadow-sm: 0 6px 16px rgba(16, 24, 32, 0.07);
 }
 
+/* Current Kara Plus site shell. The legacy theme selectors below remain temporary until the booking surface is fully extracted. */
+.header.fixed.kp-theme-header,
+.footer,
+.footer-meta { display: none; }
+
+.kara-header { position: sticky; top: 0; z-index: 50; background: #171715; border-bottom: 1px solid rgba(249, 230, 163, .22); }
+.kara-header__inner { width: min(1240px, calc(100% - 40px)); min-height: 82px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+.kara-header__brand { display: inline-flex; line-height: 0; }
+.kara-header__brand img { width: 128px; height: auto; object-fit: contain; }
+.kara-navigation { display: flex; align-items: center; gap: 27px; }
+.kara-navigation a { color: #fff; font-size: .9rem; font-weight: 600; text-decoration: none; transition: color .2s ease; }
+.kara-navigation a:hover, .kara-navigation a:focus-visible { color: #f9e6a3; }
+.kara-navigation__cta { padding: 12px 18px; background: #f9e6a3; color: #171715 !important; }
+.kara-menu-button { display: none; background: transparent; border: 0; padding: 10px; }
+.kara-menu-button span { display: block; width: 23px; height: 2px; margin: 5px; background: #f9e6a3; }
+.kara-footer { margin-top: 72px; background: #171715; color: rgba(255,255,255,.7); }
+.kara-footer__inner { width: min(1240px, calc(100% - 40px)); margin: auto; padding: 54px 0 42px; display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px; }
+.kara-footer img { width: 134px; height: auto; }
+.kara-footer p { max-width: 330px; line-height: 1.7; }
+.kara-footer h2 { margin: 0 0 13px; color: #f9e6a3; font: 700 1rem "Urbanist", sans-serif; }
+.kara-footer a { display: block; width: fit-content; color: #fff; text-decoration: none; margin: 8px 0; }
+.kara-footer a:hover { color: #f9e6a3; }
+.kara-footer__copyright { width: min(1240px, calc(100% - 40px)); margin: 0 auto; padding: 18px 0; border-top: 1px solid rgba(255,255,255,.14); font-size: .8rem; }
+
+@media (max-width: 760px) {
+  .kara-header__inner { width: min(100% - 28px, 1240px); min-height: 68px; }
+  .kara-header__brand img { width: 106px; }
+  .kara-menu-button { display: block; }
+  .kara-navigation { display: none; position: absolute; inset: 68px 0 auto; padding: 20px 14px 24px; background: #171715; border-bottom: 1px solid rgba(249,230,163,.22); box-shadow: 0 16px 28px rgba(0,0,0,.24); }
+  .kara-navigation.is-open { display: grid; gap: 18px; }
+  .kara-navigation__cta { width: fit-content; }
+  .kara-footer { margin-top: 48px; }
+  .kara-footer__inner { width: min(100% - 40px, 1240px); grid-template-columns: 1fr; gap: 24px; padding: 40px 0 26px; }
+}
+
 * {
   box-sizing: border-box;
 }
