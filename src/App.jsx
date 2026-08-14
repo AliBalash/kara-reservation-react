@@ -1477,6 +1477,7 @@ function App() {
                   <label className="kp-field">
                     <span>First name</span>
                     <input
+                      autoComplete="given-name"
                       value={form.firstName}
                       onChange={(event) => updateField("firstName", event.target.value)}
                     />
@@ -1486,6 +1487,7 @@ function App() {
                   <label className="kp-field">
                     <span>Last name</span>
                     <input
+                      autoComplete="family-name"
                       value={form.lastName}
                       onChange={(event) => updateField("lastName", event.target.value)}
                     />
@@ -1496,6 +1498,9 @@ function App() {
                     <span>Phone number</span>
                     <input
                       dir="ltr"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={form.phone}
                       onChange={(event) => updateField("phone", normalizePhoneInput(event.target.value))}
                       placeholder="+9715..."
@@ -1507,6 +1512,9 @@ function App() {
                     <span>WhatsApp / Messenger number</span>
                     <input
                       dir="ltr"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={form.messengerPhone}
                       onChange={(event) =>
                         updateField("messengerPhone", normalizePhoneInput(event.target.value))
@@ -1519,6 +1527,7 @@ function App() {
                   <label className="kp-field">
                     <span>National ID / Identification</span>
                     <input
+                      autoComplete="off"
                       value={form.nationalCode}
                       onChange={(event) => updateField("nationalCode", event.target.value)}
                     />
@@ -1528,6 +1537,7 @@ function App() {
                   <label className="kp-field">
                     <span>Nationality</span>
                     <input
+                      autoComplete="country-name"
                       value={form.nationality}
                       onChange={(event) => updateField("nationality", event.target.value)}
                     />
@@ -1538,6 +1548,8 @@ function App() {
                     <span>Email (optional)</span>
                     <input
                       dir="ltr"
+                      type="email"
+                      autoComplete="email"
                       value={form.email}
                       onChange={(event) => updateField("email", event.target.value)}
                       placeholder="name@example.com"
@@ -1567,7 +1579,7 @@ function App() {
                                 onChange={(event) => toggleService(service.id, event.target.checked)}
                               />
                               <span>
-                                <strong>{service.label_fa}</strong>
+                                <strong>{service.label_en || service.id}</strong>
                                 <small>
                                   {formatMoney(service.amount)} AED {service.per_day ? "per day" : "one time"}
                                 </small>
@@ -1624,7 +1636,7 @@ function App() {
                                 onChange={() => updateField("selectedInsurance", insurance.id)}
                               />
                               <span>
-                                <strong>{insurance.label_fa}</strong>
+                                <strong>{insurance.label_en || insurance.id}</strong>
                                 <small>{formatMoney(total)} AED for {rentalDays} days</small>
                               </span>
                             </label>
