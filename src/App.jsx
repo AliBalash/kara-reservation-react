@@ -1294,30 +1294,27 @@ function App() {
             {currentStep === 1 ? (
               <article className="kp-panel" id="step-cars">
                 <header className="kp-panel__head">
-                  <h2>مرحله ۲: انتخاب خودرو</h2>
-                  <p>
-                    همه خودروها با لوگوی برند و جزئیات کامل نمایش داده می‌شود. کافی است خودرو
-                    موردنظر را انتخاب کنید.
-                  </p>
+                  <h2>Choose Your Car</h2>
+                  <p>Browse available vehicles, compare key details and select the one that fits your journey.</p>
                 </header>
 
                 <div className="kp-car-toolbar">
                   <label className="kp-car-filter-field kp-car-filter-field--search">
-                    <span>جستجوی سریع</span>
+                    <span>Search vehicles</span>
                     <input
                       value={carFilters.search}
                       onChange={(event) => updateCarFilter("search", event.target.value)}
-                      placeholder="برند، مدل یا پلاک..."
+                      placeholder="Brand or model"
                     />
                   </label>
 
                   <label className="kp-car-filter-field">
-                    <span>برند</span>
+                    <span>Brand</span>
                     <select
                       value={carFilters.brand}
                       onChange={(event) => updateCarFilter("brand", event.target.value)}
                     >
-                      <option value="all">همه برندها</option>
+                      <option value="all">All brands</option>
                       {brandFilterOptions.map((item) => (
                         <option key={item.key} value={item.key}>
                           {item.label} ({item.count})
@@ -1327,39 +1324,39 @@ function App() {
                   </label>
 
                   <label className="kp-car-filter-field">
-                    <span>وضعیت رزرو</span>
+                    <span>Availability</span>
                     <select
                       value={carFilters.availability}
                       onChange={(event) => updateCarFilter("availability", event.target.value)}
                     >
-                      <option value="all">همه</option>
-                      <option value="available">فقط قابل رزرو</option>
-                      <option value="unavailable">فقط غیرقابل رزرو</option>
+                      <option value="all">All vehicles</option>
+                      <option value="available">Available now</option>
+                      <option value="unavailable">Unavailable</option>
                     </select>
                   </label>
 
                   <label className="kp-car-filter-field">
-                    <span>گیربکس</span>
+                    <span>Transmission</span>
                     <select
                       value={carFilters.gear}
                       onChange={(event) => updateCarFilter("gear", event.target.value)}
                     >
-                      <option value="all">همه</option>
-                      <option value="automatic">اتوماتیک</option>
-                      <option value="manual">دنده‌ای</option>
+                      <option value="all">Any transmission</option>
+                      <option value="automatic">Automatic</option>
+                      <option value="manual">Manual</option>
                     </select>
                   </label>
 
                   <label className="kp-car-filter-field">
-                    <span>مرتب‌سازی</span>
+                    <span>Sort by</span>
                     <select
                       value={carFilters.sort}
                       onChange={(event) => updateCarFilter("sort", event.target.value)}
                     >
-                      <option value="recommended">پیشنهادی</option>
-                      <option value="price_asc">قیمت کمتر</option>
-                      <option value="price_desc">قیمت بیشتر</option>
-                      <option value="brand_az">برند (الفبا)</option>
+                      <option value="recommended">Recommended</option>
+                      <option value="price_asc">Lowest price</option>
+                      <option value="price_desc">Highest price</option>
+                      <option value="brand_az">Brand A–Z</option>
                     </select>
                   </label>
 
@@ -1368,7 +1365,7 @@ function App() {
                     className="kp-btn kp-btn--outline kp-car-filter-reset"
                     onClick={resetCarFilters}
                   >
-                    پاک کردن فیلترها
+                    Clear filters
                   </button>
                 </div>
 
@@ -1376,15 +1373,15 @@ function App() {
                   <strong>
                     {filteredCars.length} / {cars.length}
                   </strong>
-                  <span>نمایش داده شده</span>
-                  <small>{availableCarsCount} خودرو قابل رزرو</small>
+                  <span>{filteredCars.length} vehicles shown</span>
+                  <small>{availableCarsCount} available to reserve</small>
                 </div>
 
                 <div className="kp-car-scroll">
                   {isCarsLoading ? (
-                    <p className="kp-muted">در حال دریافت لیست خودروها...</p>
+                    <p className="kp-muted">Loading available vehicles…</p>
                   ) : filteredCars.length === 0 ? (
-                    <div className="kp-empty">در حال حاضر خودرویی برای نمایش موجود نیست.</div>
+                    <div className="kp-empty">No vehicles match these filters. Try adjusting your search.</div>
                   ) : (
                     <div className="kp-car-list">
                       {filteredCars.map((car, cardIndex) => {
@@ -1397,12 +1394,12 @@ function App() {
 
                         const chips = [
                           car.options?.gear
-                            ? `گیربکس: ${car.options.gear === "automatic" ? "اتوماتیک" : "دنده‌ای"}`
+                            ? `Transmission: ${car.options.gear === "automatic" ? "Automatic" : "Manual"}`
                             : null,
-                          car.options?.seats ? `صندلی: ${car.options.seats}` : null,
-                          car.options?.doors ? `در: ${car.options.doors}` : null,
+                          car.options?.seats ? `${car.options.seats} seats` : null,
+                          car.options?.doors ? `${car.options.doors} doors` : null,
                           ["1", "true", "yes"].includes(String(car.options?.unlimited_km || "").toLowerCase())
-                            ? "مسافت نامحدود"
+                            ? "Unlimited mileage"
                             : null,
                         ].filter(Boolean);
 
@@ -1440,32 +1437,31 @@ function App() {
                               />
 
                               <div className="kp-car__price-tag">
-                                <small>شروع قیمت روزانه</small>
+                                <small>From / day</small>
                                 <strong>{formatMoney(car.pricing?.short)} AED</strong>
                               </div>
                             </div>
 
                             <div className="kp-car__content">
                               <div className="kp-car__head">
-                                <h3>{title || "بدون عنوان"}</h3>
+                                <h3>{title || "Vehicle"}</h3>
                                 <span className={`kp-car__status ${isAvailable ? "is-ok" : "is-off"}`}>
-                                  {isAvailable ? "قابل رزرو" : "غیرقابل رزرو"}
+                                  {isAvailable ? "Available" : "Unavailable"}
                                 </span>
                               </div>
 
-                              <p className="kp-car__plate">پلاک: {car.plate_number || "—"}</p>
 
                               <div className="kp-car__prices">
                                 <article>
-                                  <span>۱ تا ۶ روز</span>
+                                  <span>1–6 days</span>
                                   <strong>{formatMoney(car.pricing?.short)} AED</strong>
                                 </article>
                                 <article>
-                                  <span>۷ تا ۲۷ روز</span>
+                                  <span>7–27 days</span>
                                   <strong>{formatMoney(car.pricing?.mid)} AED</strong>
                                 </article>
                                 <article>
-                                  <span>۲۸ روز به بالا</span>
+                                  <span>28+ days</span>
                                   <strong>{formatMoney(car.pricing?.long)} AED</strong>
                                 </article>
                               </div>
@@ -1474,13 +1470,13 @@ function App() {
                                 {chips.length > 0 ? (
                                   chips.map((chip) => <span key={chip}>{chip}</span>)
                                 ) : (
-                                  <span>امکانات ثبت نشده</span>
+                                  <span>Details coming soon</span>
                                 )}
                               </div>
 
                               {!isAvailable && car.conflicts?.[0] ? (
                                 <p className="kp-warning">
-                                  رزرو تداخل دارد: {car.conflicts[0].pickup_date} تا {car.conflicts[0].return_date}
+                                  Unavailable from {car.conflicts[0].pickup_date} to {car.conflicts[0].return_date}
                                 </p>
                               ) : null}
 
@@ -1490,7 +1486,7 @@ function App() {
                                 disabled={!isAvailable}
                                 onClick={() => updateField("selectedCarId", String(car.id))}
                               >
-                                {isSelected ? "انتخاب شده" : "انتخاب خودرو"}
+                                {isSelected ? "Selected" : isAvailable ? "Select Car" : "Unavailable"}
                               </button>
                             </div>
                           </article>
@@ -1502,9 +1498,9 @@ function App() {
 
                 {isSelectedCarHiddenByFilter ? (
                   <p className="kp-warning kp-warning--filter">
-                    خودرو انتخاب‌شده فعلی با فیلترها پنهان شده است.
+                    Your selected vehicle is hidden by the current filters.
                     <button type="button" onClick={resetCarFilters}>
-                      نمایش مجدد
+                      Show it again
                     </button>
                   </p>
                 ) : null}
