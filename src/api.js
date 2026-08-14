@@ -1,5 +1,5 @@
 const API_BASE =
-  (import.meta.env.VITE_API_BASE_URL || "https://127.0.0.1:18001/api/public/reservations").replace(/\/+$/, "");
+  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:18000/api/public/reservations").replace(/\/+$/, "");
 
 export class ApiError extends Error {
   constructor(message, { status = 0, errors = {}, payload = null } = {}) {
