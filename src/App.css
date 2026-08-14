@@ -630,6 +630,24 @@
   margin: 0 0 16px;
   font-size: 1.22rem;
 }
+.kp-summary__card > img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 14px;
+  object-fit: cover;
+  background: #f4f2ed;
+}
+.kp-summary__card > strong,
+.kp-summary__card > small {
+  display: block;
+}
+.kp-summary__card > strong { margin-bottom: 2px; }
+.kp-summary__card > small {
+  margin-bottom: 14px;
+  color: var(--kp-muted);
+  font-size: 0.78rem;
+}
 .kp-summary__quote {
   margin-top: 20px;
   padding-top: 16px;
