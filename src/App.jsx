@@ -1792,6 +1792,18 @@ function App() {
                   <span>Insurance</span>
                   <strong>{formatMoney(quote?.insurance_total)} AED</strong>
                 </div>
+                {Number(quote?.driver_cost || 0) > 0 ? (
+                  <div>
+                    <span>Chauffeur</span>
+                    <strong>{formatMoney(quote.driver_cost)} AED</strong>
+                  </div>
+                ) : null}
+                {Number(quote?.driving_license_cost || 0) > 0 ? (
+                  <div>
+                    <span>Driving licence</span>
+                    <strong>{formatMoney(quote.driving_license_cost)} AED</strong>
+                  </div>
+                ) : null}
                 <div>
                   <span>Transfer</span>
                   <strong>{formatMoney(quote?.transfer_costs?.total)} AED</strong>
