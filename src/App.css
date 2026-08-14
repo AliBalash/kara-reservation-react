@@ -19,6 +19,7 @@
   min-height: 100vh;
   color: var(--kp-ink);
   background: var(--kp-canvas);
+  font-family: "Urbanist", ui-sans-serif, system-ui, sans-serif;
 }
 .header.fixed.kp-theme-header,
 .footer,
@@ -26,51 +27,63 @@
   display: none;
 }
 .kara-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 50;
-  background: #fcfbf8;
-  border-bottom: 1px solid var(--kp-line);
+  background: #fff;
+  border-bottom: 1px solid #dfdfdf;
 }
 .kara-header__inner {
-  width: min(1240px, calc(100% - 40px));
-  min-height: 82px;
+  width: min(1218px, calc(100% - 40px));
+  min-height: 100px;
   margin: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 32px;
+  justify-content: flex-start;
+  gap: 48px;
 }
 .kara-header__brand {
   display: inline-flex;
   line-height: 0;
 }
 .kara-header__brand img {
-  width: 142px;
-  height: 58px;
+  width: 160px;
+  height: 90px;
   object-fit: contain;
 }
 .kara-navigation {
   display: flex;
   align-items: center;
-  gap: 27px;
+  align-self: stretch;
+  gap: 0;
 }
 .kara-navigation a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 13px 20px;
   color: var(--kp-ink);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
+}
+.kara-navigation a:after {
+  position: absolute;
+  right: 20px;
+  bottom: 0;
+  left: 20px;
+  height: 3px;
+  background: var(--kp-gold);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.25);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .kara-navigation a:hover,
-.kara-navigation a:focus-visible {
-  color: #946d16;
-}
-.kara-navigation__cta {
-  padding: 12px 18px;
-  background: var(--kp-black);
-  color: #fff !important;
-}
+.kara-navigation a:focus-visible { color: #443a15; }
+.kara-navigation a:hover:after,
+.kara-navigation a:focus-visible:after { opacity: 1; transform: scaleX(1); }
 .kara-menu-button {
   display: none;
   background: transparent;
@@ -684,53 +697,73 @@
   }
 }
 .kara-footer {
-  margin-top: 72px;
-  background: var(--kp-black);
-  color: rgba(255, 255, 255, 0.7);
+  margin-top: 80px;
+  padding: 0 5%;
+  background: #000;
+  color: #dfdfdf;
 }
 .kara-footer__inner {
-  width: min(1240px, calc(100% - 40px));
+  width: min(1218px, 100%);
   margin: auto;
-  padding: 54px 0 42px;
+  padding: 60px 0 10px;
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 48px;
+  grid-template-columns: minmax(250px, 30%) minmax(130px, 15%) minmax(0, 1fr);
+  gap: 32px;
 }
+.kara-footer__contact { padding-right: 30px; }
 .kara-footer img {
-  width: 134px;
-  height: 68px;
-  padding: 7px 9px;
-  background: #fcfbf8;
+  display: block;
+  width: 185px;
+  height: 90px;
+  margin-bottom: 20px;
+  padding: 8px 12px;
+  border-radius: 15px;
+  background: #fff;
   object-fit: contain;
 }
-.kara-footer p {
-  max-width: 330px;
-  line-height: 1.7;
+.kara-footer__contact p,
+.kara-footer__contact > a:not(.kara-footer__phone) {
+  margin: 0 0 5px;
+  color: #dfdfdf;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 .kara-footer h2 {
-  margin: 0 0 13px;
-  color: var(--kp-gold);
-  font:
-    700 1rem "Urbanist",
-    sans-serif;
+  margin: 30px 0 3px;
+  color: #f1f1f1;
+  font-size: 1rem;
+  font-weight: 600;
 }
 .kara-footer a {
-  display: block;
-  width: fit-content;
-  margin: 8px 0;
-  color: #fff;
+  color: #dfdfdf;
   text-decoration: none;
 }
-.kara-footer a:hover {
-  color: var(--kp-gold);
+.kara-footer a:hover,
+.kara-footer a:focus-visible { color: var(--kp-gold); }
+.kara-footer__phone {
+  display: inline-block;
+  color: var(--kp-gold) !important;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
+.kara-footer__links {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.kara-footer__links a { color: #dfdfdf; font-size: 1rem; line-height: 1.5; }
+.kara-footer__map { min-height: 210px; }
+.kara-footer__map iframe { width: 100%; min-height: 210px; border: 0; }
 .kara-footer__copyright {
-  width: min(1240px, calc(100% - 40px));
+  width: min(1218px, 100%);
   margin: 0 auto;
-  padding: 18px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  font-size: 0.8rem;
+  padding: 4px;
+  border-top: 1px solid #363636;
+  color: #dfdfdf;
+  font-size: 0.9rem;
+  text-align: center;
 }
+.kara-footer__copyright span { color: var(--kp-gold); }
 .kp-mobile-booking-bar {
   display: none;
 }

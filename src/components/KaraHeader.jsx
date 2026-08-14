@@ -18,7 +18,6 @@ export default function KaraHeader({ open, onToggle, onClose }) {
         </button>
         <nav id="kara-navigation" className={`kara-navigation ${open ? "is-open" : ""}`} aria-label="Primary navigation">
           {links.map((link) => <a key={link.label} href={link.href} onClick={onClose}>{link.label}</a>)}
-          <a className="kara-navigation__cta" href="#request-form" onClick={onClose}>Reserve a car</a>
         </nav>
       </div>
     </header>
