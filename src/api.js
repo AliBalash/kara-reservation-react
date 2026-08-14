@@ -27,7 +27,7 @@ async function request(path, { method = "GET", body, signal } = {}) {
   const payload = isJsonResponse ? await response.json().catch(() => null) : null;
 
   if (response.redirected) {
-    throw new ApiError("درخواست به آدرس دیگری منتقل شد. لطفا تنظیمات API را بررسی کنید.", {
+    throw new ApiError("The reservation request was redirected. Please check the API configuration.", {
       status: response.status,
       payload,
     });
@@ -49,7 +49,7 @@ async function request(path, { method = "GET", body, signal } = {}) {
   }
 
   if (!isJsonResponse || payload === null || typeof payload !== "object") {
-    throw new ApiError("پاسخ دریافت‌شده از API معتبر نیست.", {
+    throw new ApiError("The reservation service returned an invalid response.", {
       status: response.status,
       payload,
     });

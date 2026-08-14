@@ -1152,7 +1152,7 @@ function App() {
               <div className="kp-stepper__meta">
                 <div>
                   <strong>
-                    مرحله {currentStep + 1} از {STEPS.length}
+                    Step {currentStep + 1} of {STEPS.length}
                   </strong>
                   <small>{STEPS[currentStep]?.title}</small>
                 </div>
@@ -1597,7 +1597,7 @@ function App() {
                               <span>
                                 <strong>{service.label_fa}</strong>
                                 <small>
-                                  {formatMoney(service.amount)} AED {service.per_day ? "(روزانه)" : "(یک‌بار)"}
+                                  {formatMoney(service.amount)} AED {service.per_day ? "per day" : "one time"}
                                 </small>
                               </span>
                             </label>
@@ -1653,7 +1653,7 @@ function App() {
                               />
                               <span>
                                 <strong>{insurance.label_fa}</strong>
-                                <small>{formatMoney(total)} AED برای {rentalDays} روز</small>
+                                <small>{formatMoney(total)} AED for {rentalDays} days</small>
                               </span>
                             </label>
                           );
@@ -1751,7 +1751,7 @@ function App() {
                   <strong>
                     {selectedCar.car_model?.brand} {selectedCar.car_model?.model}
                   </strong>
-                  <small>پلاک: {selectedCar.plate_number || "—"}</small>
+                  <small>Vehicle ID: {selectedCar.plate_number || "—"}</small>
                 </>
               ) : (
                 <p className="kp-muted">Choose a vehicle to see your booking summary.</p>
