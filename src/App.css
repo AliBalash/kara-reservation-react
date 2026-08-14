@@ -449,10 +449,25 @@
   aspect-ratio: 1.65;
   background: #f4f2ed;
 }
-.kp-car__media img {
+.kp-car__media > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.kp-car__brand {
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  max-width: calc(100% - 20px);
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--kp-ink);
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 .kp-car__price-tag {
   position: absolute;
@@ -489,8 +504,14 @@
   color: var(--kp-danger);
 }
 .kp-brand-logo {
+  display: inline-flex;
+  flex: 0 0 28px;
   width: 28px;
   height: 28px;
+}
+.kp-brand-logo img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 .kp-chip-list {
@@ -614,6 +635,23 @@
   padding-top: 16px;
   border-top: 1px solid var(--kp-line);
 }
+.kp-summary__quote header,
+.kp-summary__quote > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kp-summary__quote header {
+  margin-bottom: 10px;
+  color: var(--kp-muted);
+  font-size: 0.78rem;
+}
+.kp-summary__quote > div {
+  padding: 3px 0;
+  color: var(--kp-muted);
+  font-size: 0.82rem;
+}
+.kp-summary__quote > div strong { color: var(--kp-ink); text-align: right; }
 .kp-summary__rows {
   display: grid;
   gap: 10px;
