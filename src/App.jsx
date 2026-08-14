@@ -13,6 +13,8 @@ import "./App.css";
 import "react-datepicker/dist/react-datepicker.css";
 import KaraFooter from "./components/KaraFooter";
 import KaraHeader from "./components/KaraHeader";
+import ReservationHero from "./components/ReservationHero";
+import SuccessState from "./components/SuccessState";
 
 const MENU_ITEMS = [
   { label: "Home", href: "https://newsite.karaplus.ae/" },
@@ -1111,40 +1113,10 @@ function App() {
         </div>
       </header>
 
-      <section className="kp-hero">
-        <div className="kp-hero__overlay" />
-        <div className="kp-hero__content">
-          <p className="kp-hero__kicker">KARA PLUS RENTAL DUBAI</p>
-          <h1>Reserve Your Car in Dubai</h1>
-          <p>Choose your dates, select your preferred vehicle and send your reservation request in just a few steps.</p>
-          <ul className="kp-hero__trust" aria-label="Kara Plus benefits"><li>Best Price</li><li>Premium Service</li><li>24/7 Support</li></ul>
-        </div>
-      </section>
+      <ReservationHero />
 
       {submitSuccess ? (
-        <section className="kp-success">
-          <h2>Reservation Request Received</h2>
-          <p>Your request has been sent to Kara Plus. Our team will contact you shortly to confirm the next steps.</p>
-
-          <div className="kp-success__meta">
-            <article>
-              <span>Contract / Request ID</span>
-              <strong>#{submitSuccess.contract_id}</strong>
-            </article>
-            <article>
-              <span>Status</span>
-              <strong>{submitSuccess.status}</strong>
-            </article>
-            <article>
-              <span>Estimated Final Total</span>
-              <strong>{formatMoney(submitSuccess.quote?.final_total)} AED</strong>
-            </article>
-          </div>
-
-          <button type="button" className="kp-btn kp-btn--primary" onClick={resetForm}>
-            Book Another Car
-          </button>
-        </section>
+        <SuccessState result={submitSuccess} onReset={resetForm} formatMoney={formatMoney} />
       ) : (
         <form className="kp-shell" id="request-form" onSubmit={handleSubmit}>
           <section className="kp-main">
