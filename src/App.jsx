@@ -876,38 +876,38 @@ function App() {
     }
 
     if (stepIndex === 2) {
-      if (!form.firstName.trim()) nextErrors.firstName = "نام الزامی است.";
-      if (!form.lastName.trim()) nextErrors.lastName = "نام خانوادگی الزامی است.";
-      if (!form.phone.trim()) nextErrors.phone = "شماره تماس الزامی است.";
-      if (!form.messengerPhone.trim()) nextErrors.messengerPhone = "شماره پیام‌رسان الزامی است.";
-      if (!form.nationalCode.trim()) nextErrors.nationalCode = "کد ملی/شناسه الزامی است.";
-      if (!form.nationality.trim()) nextErrors.nationality = "ملیت الزامی است.";
+      if (!form.firstName.trim()) nextErrors.firstName = "Enter your first name.";
+      if (!form.lastName.trim()) nextErrors.lastName = "Enter your last name.";
+      if (!form.phone.trim()) nextErrors.phone = "Enter your phone number.";
+      if (!form.messengerPhone.trim()) nextErrors.messengerPhone = "Enter your WhatsApp or Messenger number.";
+      if (!form.nationalCode.trim()) nextErrors.nationalCode = "Enter your national ID or identification.";
+      if (!form.nationality.trim()) nextErrors.nationality = "Enter your nationality.";
 
       const normalizedPhone = toApiPhone(form.phone);
       const normalizedMessenger = toApiPhone(form.messengerPhone);
 
       if (form.phone && !PHONE_REGEX.test(normalizedPhone)) {
-        nextErrors.phone = "شماره تماس باید با + شروع شود و ۸ تا ۱۵ رقم داشته باشد.";
+        nextErrors.phone = "Use an international phone number starting with + (8–15 digits).";
       }
 
       if (form.messengerPhone && !PHONE_REGEX.test(normalizedMessenger)) {
-        nextErrors.messengerPhone = "شماره پیام‌رسان باید با + شروع شود و ۸ تا ۱۵ رقم داشته باشد.";
+        nextErrors.messengerPhone = "Use an international phone number starting with + (8–15 digits).";
       }
 
       if (form.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) {
-        nextErrors.email = "ایمیل وارد شده معتبر نیست.";
+        nextErrors.email = "Enter a valid email address.";
       }
 
       if (Number(form.driverHours || 0) < 0) {
-        nextErrors.driverHours = "ساعت راننده نمی‌تواند منفی باشد.";
+        nextErrors.driverHours = "Chauffeur hours cannot be negative.";
       }
 
       if (Number(form.serviceQuantities.child_seat || 0) < 0) {
-        nextErrors.childSeatQuantity = "تعداد صندلی کودک نامعتبر است.";
+        nextErrors.childSeatQuantity = "Enter a valid child seat quantity.";
       }
 
       if (!form.acceptTerms) {
-        nextErrors.acceptTerms = "برای ثبت درخواست، تایید قوانین ضروری است.";
+        nextErrors.acceptTerms = "Accept the reservation terms to send your request.";
       }
     }
 
@@ -935,7 +935,7 @@ function App() {
     event.preventDefault();
 
     if (!bootstrapData) {
-      setSubmitError("اطلاعات اولیه فرم کامل بارگذاری نشده است. لطفا چند ثانیه بعد دوباره تلاش کنید.");
+      setSubmitError("Reservation details are still loading. Please try again in a moment.");
       return;
     }
 
@@ -948,7 +948,7 @@ function App() {
       const valid = validateStep(step);
       if (!valid) {
         setCurrentStep(step);
-        setSubmitError("لطفا خطاهای فرم را برطرف کنید و دوباره تلاش کنید.");
+        setSubmitError("Please fix the highlighted fields and try again.");
         return;
       }
     }
@@ -964,7 +964,7 @@ function App() {
       if (isValidationApiError(error)) {
         const serverErrors = normalizeValidationErrors(error.errors);
         setErrors((prev) => ({ ...prev, ...serverErrors }));
-        setSubmitError("برخی فیلدها معتبر نیستند. لطفا خطاهای فرم را برطرف کنید.");
+        setSubmitError("Please fix the highlighted fields and try again.");
 
         const firstServerField = Object.keys(serverErrors)[0];
         if (firstServerField) {
@@ -972,7 +972,7 @@ function App() {
         }
       } else {
         setSubmitError(
-          toPersianErrorText(error.message, "ارسال درخواست با خطا مواجه شد. لطفا دوباره تلاش کنید.")
+          toPersianErrorText(error.message, "We could not send your request. Please try again.")
         );
       }
     } finally {
