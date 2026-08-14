@@ -1,6 +1,9 @@
 export default function ReservationHero() {
   return (
     <section className="kp-hero">
+      <video className="kp-hero__motion" autoPlay muted loop playsInline preload="metadata" aria-hidden="true">
+        <source src="/media/kara-plus-motion.webm" type="video/webm" />
+      </video>
       <div className="kp-hero__overlay" />
       <div className="kp-hero__content">
         <p className="kp-hero__kicker">KARA PLUS RENTAL DUBAI</p>
