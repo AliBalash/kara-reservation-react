@@ -279,6 +279,28 @@
   color: var(--kp-muted);
   line-height: 1.6;
 }
+
+.kp-catalog-choice {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(218, 173, 68, 0.55);
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, rgba(218, 173, 68, 0.14), rgba(255, 255, 255, 0.04));
+}
+
+.kp-catalog-choice span {
+  color: var(--kp-gold, #d8ad44);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.kp-catalog-choice strong { font-size: 1rem; }
+.kp-catalog-choice small { color: var(--kp-text-muted, #aeb4bd); }
+.kp-catalog-choice--confirmed { border-color: rgba(99, 205, 143, 0.58); }
 .kp-grid {
   display: grid;
   gap: 18px;

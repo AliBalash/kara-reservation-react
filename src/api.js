@@ -96,6 +96,16 @@ export function fetchCars({ modelId, brand, pickupDate, returnDate }, signal) {
   return request(`/cars${query ? `?${query}` : ""}`, { signal });
 }
 
+export function fetchCatalogSelection({ vehicleCode, pickupDate, returnDate }, signal) {
+  const params = new URLSearchParams({ vehicle_code: vehicleCode });
+  if (pickupDate && returnDate) {
+    params.set("pickup_date", pickupDate);
+    params.set("return_date", returnDate);
+  }
+
+  return request(`/catalog-selection?${params.toString()}`, { signal });
+}
+
 export function fetchQuote(body, signal) {
   return request("/quote", { method: "POST", body, signal });
 }

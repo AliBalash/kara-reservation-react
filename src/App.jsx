@@ -5,6 +5,7 @@ import {
   API_BASE,
   createReservation,
   fetchBootstrap,
+  fetchCatalogSelection,
   fetchCars,
   fetchQuote,
   isValidationApiError,
@@ -353,6 +354,14 @@ function submitPayloadFromForm(form, bootstrapData) {
   };
 }
 
+function getRequestedVehicleCode() {
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("vehicle") || params.get("vehicle_code") || "";
+  const normalized = value.trim().toUpperCase();
+
+  return /^[A-Z0-9-]{3,40}$/.test(normalized) ? normalized : "";
+}
+
 function getApiOrigin() {
   try {
     return new URL(API_BASE).origin;
@@ -401,6 +410,10 @@ function brandLogoPath(brand) {
 
 function App() {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [requestedVehicleCode] = useState(getRequestedVehicleCode);
+  const [requestedCatalogItem, setRequestedCatalogItem] = useState(null);
+  const [catalogSelectionError, setCatalogSelectionError] = useState("");
+  const [shouldScrollToVehicles, setShouldScrollToVehicles] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sameLocation, setSameLocation] = useState(true);
@@ -659,29 +672,58 @@ function App() {
     const controller = new AbortController();
     setCarsLoading(true);
 
-    fetchCars(
-      {
-        modelId: null,
-        pickupDate: form.pickupDate || null,
-        returnDate: form.returnDate || null,
-      },
-      controller.signal
-    )
-      .then((items) => {
-        const list = items || [];
+    const hasRentalWindow = Boolean(form.pickupDate && form.returnDate);
+    const loader = requestedVehicleCode && hasRentalWindow
+      ? fetchCatalogSelection(
+          {
+            vehicleCode: requestedVehicleCode,
+            pickupDate: form.pickupDate,
+            returnDate: form.returnDate,
+          },
+          controller.signal
+        )
+      : fetchCars(
+          {
+            modelId: null,
+            pickupDate: form.pickupDate || null,
+            returnDate: form.returnDate || null,
+          },
+          controller.signal
+        );
+
+    loader
+      .then((result) => {
+        const isCatalogSelection = requestedVehicleCode && hasRentalWindow;
+        const list = isCatalogSelection ? result?.cars || [] : result || [];
         setCars(list);
+        setCatalogSelectionError("");
+
+        if (isCatalogSelection) {
+          setRequestedCatalogItem(result?.catalog_item || null);
+        }
 
         setForm((prev) => {
-          if (!prev.selectedCarId) return prev;
-
           const stillExists = list.some((car) => String(car.id) === String(prev.selectedCarId));
           if (stillExists) return prev;
+
+          const firstAvailable = isCatalogSelection
+            ? list.find((car) => car.is_available_for_selection !== false)
+            : null;
+          if (firstAvailable) {
+            return { ...prev, selectedCarId: String(firstAvailable.id) };
+          }
 
           return { ...prev, selectedCarId: "" };
         });
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
+        if (requestedVehicleCode && hasRentalWindow) {
+          setCars([]);
+          setCatalogSelectionError(
+            "We could not match the vehicle you selected. Please choose another vehicle from Kara Plus."
+          );
+        }
         setSubmitError(
           `We could not load vehicles: ${toPersianErrorText(
             error.message,
@@ -694,7 +736,14 @@ function App() {
       });
 
     return () => controller.abort();
-  }, [bootstrapData, form.pickupDate, form.returnDate]);
+  }, [bootstrapData, form.pickupDate, form.returnDate, requestedVehicleCode]);
+
+  useEffect(() => {
+    if (currentStep !== 1 || isCarsLoading || !shouldScrollToVehicles) return;
+
+    document.getElementById("step-cars")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setShouldScrollToVehicles(false);
+  }, [currentStep, isCarsLoading, shouldScrollToVehicles]);
 
   useEffect(() => {
     if (!canRequestQuote) {
@@ -930,6 +979,10 @@ function App() {
       return;
     }
 
+    if (currentStep === 0) {
+      setShouldScrollToVehicles(true);
+    }
+
     setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
   }
 
@@ -964,7 +1017,10 @@ function App() {
     setSubmitError("");
 
     try {
-      const payload = submitPayloadFromForm(form, bootstrapData);
+      const payload = {
+        ...submitPayloadFromForm(form, bootstrapData),
+        ...(requestedVehicleCode ? { marketing_vehicle_code: requestedVehicleCode } : {}),
+      };
       const result = await createReservation(payload);
       setSubmitSuccess(result);
     } catch (error) {
@@ -1185,6 +1241,17 @@ function App() {
                   <p>Set your pick-up and return times, then choose where you would like to collect your vehicle.</p>
                 </header>
 
+                {requestedVehicleCode ? (
+                  <aside className="kp-catalog-choice" aria-live="polite">
+                    <span>Selected from Kara Plus</span>
+                    <strong>
+                      {requestedCatalogItem?.display_name || "Your requested vehicle"}
+                      {requestedCatalogItem?.manufacturing_year ? ` · ${requestedCatalogItem.manufacturing_year}` : ""}
+                    </strong>
+                    <small>Code: {requestedVehicleCode}. We will confirm availability after you enter your rental dates.</small>
+                  </aside>
+                ) : null}
+
                 <div className="kp-grid kp-grid--two">
                   <label className="kp-field">
                     <span>Pick-up date & time</span>
@@ -1271,8 +1338,25 @@ function App() {
               <article className="kp-panel" id="step-cars">
                 <header className="kp-panel__head">
                   <h2>Choose Your Car</h2>
-                  <p>Browse available vehicles, compare key details and select the one that fits your journey.</p>
+                  <p>
+                    {requestedCatalogItem
+                      ? `We found matching ${requestedCatalogItem.display_name} vehicles for your dates.`
+                      : "Browse available vehicles, compare key details and select the one that fits your journey."}
+                  </p>
                 </header>
+
+                {requestedVehicleCode ? (
+                  <aside className="kp-catalog-choice kp-catalog-choice--confirmed" aria-live="polite">
+                    <span>Requested vehicle</span>
+                    <strong>
+                      {requestedCatalogItem?.display_name || requestedVehicleCode}
+                      {requestedCatalogItem?.manufacturing_year ? ` · ${requestedCatalogItem.manufacturing_year}` : ""}
+                    </strong>
+                    <small>
+                      {catalogSelectionError || "The matching available vehicle has been selected for you. You can review it below."}
+                    </small>
+                  </aside>
+                ) : null}
 
                 <div className="kp-car-toolbar">
                   <label className="kp-car-filter-field kp-car-filter-field--search">
