@@ -3,6 +3,7 @@ export default function ReservationHero() {
     <section className="kp-hero">
       <div className="kp-hero__overlay" />
       <div className="kp-hero__content">
+        <p className="kp-hero__eyebrow">Kara Plus · Dubai</p>
         <h1>
           <span>Looking to Rent a Car in Dubai?</span>
           <span>You&apos;re in the perfect spot.</span>

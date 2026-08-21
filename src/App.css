@@ -100,31 +100,51 @@
 .kp-hero {
   position: relative;
   overflow: hidden;
-  min-height: 465px;
-  padding: 7% 10% 6% 7%;
-  background: #111 url("https://newsite.karaplus.ae/wp-content/uploads/2026/07/G3.webp") center / cover no-repeat;
+  min-height: 420px;
+  aspect-ratio: 3 / 1;
+  display: flex;
+  align-items: center;
+  padding: clamp(48px, 6.2vw, 104px) max(7vw, calc((100vw - 1240px) / 2));
+  background: #111 url("/reservation-hero-dubai.png") center / cover no-repeat;
   color: #fff;
 }
 .kp-hero:after {
   content: "";
   position: absolute;
   inset: 0;
-  background: url("https://newsite.karaplus.ae/wp-content/uploads/2026/06/bg-trans.png") center / cover no-repeat;
-  opacity: 0.5;
+  background: linear-gradient(90deg, rgba(5, 7, 9, 0.2) 0%, rgba(5, 7, 9, 0.06) 45%, rgba(5, 7, 9, 0) 70%);
   z-index: 1;
 }
 .kp-hero__overlay {
-  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(90deg, rgba(5, 7, 9, 0.66) 0%, rgba(5, 7, 9, 0.31) 37%, transparent 63%);
 }
 .kp-hero__content {
   position: relative;
   z-index: 2;
-  max-width: 850px;
+  max-width: 650px;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42);
+}
+.kp-hero__eyebrow {
+  width: fit-content;
+  margin: 0 0 14px;
+  padding: 7px 11px;
+  border: 1px solid rgba(249, 230, 163, 0.54);
+  border-radius: 999px;
+  background: rgba(13, 15, 17, 0.42);
+  color: #f9e6a3;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: none;
 }
 .kp-hero h1 {
   margin: 0;
   color: #fff;
-  font-size: clamp(2.25rem, 4.35vw, 3.6rem);
+  font-size: clamp(2.15rem, 4vw, 3.55rem);
   font-weight: 600;
   line-height: 1.22;
 }
@@ -136,7 +156,7 @@
   padding: 0;
   margin: 18px 0 25px;
   list-style: none;
-  color: #d8f4db;
+  color: rgba(255, 255, 255, 0.92);
   font-size: 1rem;
   font-weight: 600;
 }
@@ -158,16 +178,16 @@
   min-height: 48px;
   align-items: center;
   padding: 11px 23px;
-  border: 1px solid #443a15;
-  border-radius: 10px;
-  background: #d8f4db;
-  color: #000;
+  border: 1px solid rgba(249, 230, 163, 0.85);
+  border-radius: 6px;
+  background: var(--kp-gold);
+  color: #24200e;
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
 }
 .kp-hero__reservation-link:hover,
-.kp-hero__reservation-link:focus-visible { background: #fff; }
+.kp-hero__reservation-link:focus-visible { background: #fff4c9; }
 .kp-shell {
   width: min(1240px, calc(100% - 40px));
   margin: 40px auto 0;
@@ -908,10 +928,12 @@
   .kara-navigation a { height: auto; padding: 4px 8px; color: #fff; }
   .kara-navigation a:after { right: 8px; left: 8px; }
   .kp-hero {
-    min-height: 410px;
+    min-height: 400px;
+    aspect-ratio: auto;
     padding: 72px 28px 55px;
-    background-position: 62% center;
+    background-position: 63% center;
   }
+  .kp-hero__overlay { background: linear-gradient(90deg, rgba(5, 7, 9, 0.78), rgba(5, 7, 9, 0.51) 54%, rgba(5, 7, 9, 0.2)); }
   .kp-hero h1 { font-size: clamp(2rem, 10vw, 2.65rem); }
   .kp-hero__trust { gap: 11px 16px; font-size: .9rem; }
   .kp-shell {
