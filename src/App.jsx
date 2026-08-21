@@ -569,6 +569,10 @@ function App() {
     () => cars.find((car) => String(car.id) === String(form.selectedCarId)) || null,
     [cars, form.selectedCarId]
   );
+  const hasAvailableRequestedVehicle = useMemo(
+    () => cars.some((car) => car.is_available_for_selection !== false),
+    [cars]
+  );
 
   const pickupDateValue = useMemo(() => parseApiDateTime(form.pickupDate), [form.pickupDate]);
   const returnDateValue = useMemo(() => parseApiDateTime(form.returnDate), [form.returnDate]);
@@ -1353,7 +1357,9 @@ function App() {
                       {requestedCatalogItem?.manufacturing_year ? ` · ${requestedCatalogItem.manufacturing_year}` : ""}
                     </strong>
                     <small>
-                      {catalogSelectionError || "The matching available vehicle has been selected for you. You can review it below."}
+                      {catalogSelectionError || (hasAvailableRequestedVehicle
+                        ? "The matching available vehicle has been selected for you. You can review it below."
+                        : "This vehicle is not available for the selected dates. Please choose different dates or return to Kara Plus to select another vehicle.")}
                     </small>
                   </aside>
                 ) : null}
