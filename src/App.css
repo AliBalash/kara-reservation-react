@@ -466,6 +466,18 @@
 .kp-car.is-selected {
   border: 2px solid var(--kp-gold-deep);
 }
+.kp-car.is-requested {
+  box-shadow: 0 0 0 4px rgba(218, 173, 68, 0.14), var(--kp-shadow);
+}
+.kp-car__requested-label {
+  display: inline-block;
+  margin-top: 0.28rem;
+  color: var(--kp-gold-deep);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .kp-car__media {
   position: relative;
   aspect-ratio: 1.65;

@@ -412,6 +412,7 @@ function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [requestedVehicleCode] = useState(getRequestedVehicleCode);
   const [requestedCatalogItem, setRequestedCatalogItem] = useState(null);
+  const [requestedCatalogCarIds, setRequestedCatalogCarIds] = useState([]);
   const [catalogSelectionError, setCatalogSelectionError] = useState("");
   const [shouldScrollToVehicles, setShouldScrollToVehicles] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -441,6 +442,7 @@ function App() {
 
   const [quote, setQuote] = useState(null);
   const quoteAbortRef = useRef(null);
+  const selectedCatalogCarRef = useRef(null);
 
   const fallbackCarImage = useMemo(() => fallbackImageUrl(), []);
 
@@ -513,7 +515,6 @@ function App() {
       return true;
     });
 
-    const selectedId = String(form.selectedCarId || "");
     const comparePrice = (car) => Number(car?.pricing?.short || 0);
 
     list = [...list].sort((left, right) => {
@@ -525,9 +526,6 @@ function App() {
         return leftName.localeCompare(rightName);
       }
 
-      if (String(left.id) === selectedId) return -1;
-      if (String(right.id) === selectedId) return 1;
-
       const leftAvailable = left.is_available_for_selection !== false ? 1 : 0;
       const rightAvailable = right.is_available_for_selection !== false ? 1 : 0;
       if (leftAvailable !== rightAvailable) return rightAvailable - leftAvailable;
@@ -536,7 +534,7 @@ function App() {
     });
 
     return list;
-  }, [cars, carFilters, form.selectedCarId]);
+  }, [cars, carFilters]);
 
   const isSelectedCarHiddenByFilter = useMemo(() => {
     if (!form.selectedCarId) return false;
@@ -570,8 +568,10 @@ function App() {
     [cars, form.selectedCarId]
   );
   const hasAvailableRequestedVehicle = useMemo(
-    () => cars.some((car) => car.is_available_for_selection !== false),
-    [cars]
+    () => cars.some(
+      (car) => requestedCatalogCarIds.includes(String(car.id)) && car.is_available_for_selection !== false
+    ),
+    [cars, requestedCatalogCarIds]
   );
 
   const pickupDateValue = useMemo(() => parseApiDateTime(form.pickupDate), [form.pickupDate]);
@@ -677,7 +677,16 @@ function App() {
     setCarsLoading(true);
 
     const hasRentalWindow = Boolean(form.pickupDate && form.returnDate);
-    const loader = requestedVehicleCode && hasRentalWindow
+    const carsRequest = fetchCars(
+      {
+        modelId: null,
+        pickupDate: form.pickupDate || null,
+        returnDate: form.returnDate || null,
+      },
+      controller.signal
+    );
+    const isCatalogSelection = requestedVehicleCode && hasRentalWindow;
+    const selectionRequest = isCatalogSelection
       ? fetchCatalogSelection(
           {
             vehicleCode: requestedVehicleCode,
@@ -685,25 +694,29 @@ function App() {
             returnDate: form.returnDate,
           },
           controller.signal
-        )
-      : fetchCars(
-          {
-            modelId: null,
-            pickupDate: form.pickupDate || null,
-            returnDate: form.returnDate || null,
-          },
-          controller.signal
-        );
+        ).catch((error) => ({ error }))
+      : null;
 
-    loader
-      .then((result) => {
-        const isCatalogSelection = requestedVehicleCode && hasRentalWindow;
-        const list = isCatalogSelection ? result?.cars || [] : result || [];
+    Promise.all([carsRequest, selectionRequest])
+      .then(([allCars, selection]) => {
+        const list = allCars || [];
         setCars(list);
         setCatalogSelectionError("");
 
         if (isCatalogSelection) {
-          setRequestedCatalogItem(result?.catalog_item || null);
+          if (selection?.error) {
+            setRequestedCatalogCarIds([]);
+            setCatalogSelectionError(
+              "We could not match the vehicle you selected. Browse the full catalogue to choose another vehicle."
+            );
+            return;
+          }
+
+          const requestedCars = selection?.cars || [];
+          setRequestedCatalogItem(selection?.catalog_item || null);
+          setRequestedCatalogCarIds(requestedCars.map((car) => String(car.id)));
+        } else {
+          setRequestedCatalogCarIds([]);
         }
 
         setForm((prev) => {
@@ -711,7 +724,10 @@ function App() {
           if (stillExists) return prev;
 
           const firstAvailable = isCatalogSelection
-            ? list.find((car) => car.is_available_for_selection !== false)
+            ? list.find(
+                (car) => selection?.cars?.some((requestedCar) => String(requestedCar.id) === String(car.id))
+                  && car.is_available_for_selection !== false
+              )
             : null;
           if (firstAvailable) {
             return { ...prev, selectedCarId: String(firstAvailable.id) };
@@ -722,12 +738,6 @@ function App() {
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
-        if (requestedVehicleCode && hasRentalWindow) {
-          setCars([]);
-          setCatalogSelectionError(
-            "We could not match the vehicle you selected. Please choose another vehicle from Kara Plus."
-          );
-        }
         setSubmitError(
           `We could not load vehicles: ${toPersianErrorText(
             error.message,
@@ -745,7 +755,8 @@ function App() {
   useEffect(() => {
     if (currentStep !== 1 || isCarsLoading || !shouldScrollToVehicles) return;
 
-    document.getElementById("step-cars")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const target = selectedCatalogCarRef.current || document.getElementById("step-cars");
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
     setShouldScrollToVehicles(false);
   }, [currentStep, isCarsLoading, shouldScrollToVehicles]);
 
@@ -1344,7 +1355,7 @@ function App() {
                   <h2>Choose Your Car</h2>
                   <p>
                     {requestedCatalogItem
-                      ? `We found matching ${requestedCatalogItem.display_name} vehicles for your dates.`
+                      ? `Your requested ${requestedCatalogItem.display_name} is highlighted below. You can still browse and choose any available vehicle.`
                       : "Browse available vehicles, compare key details and select the one that fits your journey."}
                   </p>
                 </header>
@@ -1358,8 +1369,8 @@ function App() {
                     </strong>
                     <small>
                       {catalogSelectionError || (hasAvailableRequestedVehicle
-                        ? "The matching available vehicle has been selected for you. You can review it below."
-                        : "This vehicle is not available for the selected dates. Please choose different dates or return to Kara Plus to select another vehicle.")}
+                        ? "The matching available vehicle is selected for you. You can keep it or choose any other vehicle below."
+                        : "This vehicle is not available for the selected dates. Browse the full catalogue below to choose another vehicle.")}
                     </small>
                   </aside>
                 ) : null}
@@ -1452,6 +1463,7 @@ function App() {
                     <div className="kp-car-list">
                       {filteredCars.map((car, cardIndex) => {
                         const isSelected = String(form.selectedCarId) === String(car.id);
+                        const isRequestedCatalogCar = requestedCatalogCarIds.includes(String(car.id));
                         const isAvailable = car.is_available_for_selection !== false;
                         const brand = car.car_model?.brand || "";
                         const model = car.car_model?.model || "";
@@ -1472,7 +1484,8 @@ function App() {
                         return (
                           <article
                             key={car.id}
-                            className={`kp-car ${isSelected ? "is-selected" : ""} ${
+                            ref={isSelected && isRequestedCatalogCar ? selectedCatalogCarRef : null}
+                            className={`kp-car ${isSelected ? "is-selected" : ""} ${isRequestedCatalogCar ? "is-requested" : ""} ${
                               !isAvailable ? "is-unavailable" : ""
                             }`}
                             style={{ "--kp-card-index": cardIndex % 12 }}
@@ -1510,7 +1523,10 @@ function App() {
 
                             <div className="kp-car__content">
                               <div className="kp-car__head">
-                                <h3>{title || "Vehicle"}</h3>
+                                <div>
+                                  <h3>{title || "Vehicle"}</h3>
+                                  {isRequestedCatalogCar ? <small className="kp-car__requested-label">Requested from Kara Plus</small> : null}
+                                </div>
                                 <span className={`kp-car__status ${isAvailable ? "is-ok" : "is-off"}`}>
                                   {isAvailable ? "Available" : "Unavailable"}
                                 </span>
