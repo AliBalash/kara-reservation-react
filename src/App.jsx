@@ -430,8 +430,6 @@ function App() {
   const [carFilters, setCarFilters] = useState({
     search: "",
     brand: "all",
-    availability: "all",
-    gear: "all",
     sort: "recommended",
   });
 
@@ -474,26 +472,11 @@ function App() {
   const filteredCars = useMemo(() => {
     const searchValue = carFilters.search.trim().toLowerCase();
     const selectedBrand = carFilters.brand;
-    const availability = carFilters.availability;
-    const gear = carFilters.gear;
 
     let list = cars.filter((car) => {
       if (selectedBrand !== "all") {
         const carBrand = normalizeBrandKey(car?.car_model?.brand || "");
         if (carBrand !== selectedBrand) return false;
-      }
-
-      if (availability === "available" && car.is_available_for_selection === false) {
-        return false;
-      }
-
-      if (availability === "unavailable" && car.is_available_for_selection !== false) {
-        return false;
-      }
-
-      if (gear !== "all") {
-        const carGear = String(car?.options?.gear || "").toLowerCase();
-        if (carGear !== gear) return false;
       }
 
       if (searchValue) {
@@ -518,6 +501,10 @@ function App() {
     const comparePrice = (car) => Number(car?.pricing?.short || 0);
 
     list = [...list].sort((left, right) => {
+      const leftFeatured = left?.car_model?.is_featured ? 1 : 0;
+      const rightFeatured = right?.car_model?.is_featured ? 1 : 0;
+      if (leftFeatured !== rightFeatured) return rightFeatured - leftFeatured;
+
       if (carFilters.sort === "price_asc") return comparePrice(left) - comparePrice(right);
       if (carFilters.sort === "price_desc") return comparePrice(right) - comparePrice(left);
       if (carFilters.sort === "brand_az") {
@@ -862,8 +849,6 @@ function App() {
     setCarFilters({
       search: "",
       brand: "all",
-      availability: "all",
-      gear: "all",
       sort: "recommended",
     });
   }
@@ -1401,30 +1386,6 @@ function App() {
                   </label>
 
                   <label className="kp-car-filter-field">
-                    <span>Availability</span>
-                    <select
-                      value={carFilters.availability}
-                      onChange={(event) => updateCarFilter("availability", event.target.value)}
-                    >
-                      <option value="all">All vehicles</option>
-                      <option value="available">Available now</option>
-                      <option value="unavailable">Unavailable</option>
-                    </select>
-                  </label>
-
-                  <label className="kp-car-filter-field">
-                    <span>Transmission</span>
-                    <select
-                      value={carFilters.gear}
-                      onChange={(event) => updateCarFilter("gear", event.target.value)}
-                    >
-                      <option value="all">Any transmission</option>
-                      <option value="automatic">Automatic</option>
-                      <option value="manual">Manual</option>
-                    </select>
-                  </label>
-
-                  <label className="kp-car-filter-field">
                     <span>Sort by</span>
                     <select
                       value={carFilters.sort}
@@ -1451,7 +1412,7 @@ function App() {
                     {filteredCars.length} / {cars.length}
                   </strong>
                   <span>{filteredCars.length} vehicles shown</span>
-                  <small>{availableCarsCount} available to reserve</small>
+                  <small>{availableCarsCount} currently available · Featured vehicles appear first</small>
                 </div>
 
                 <div className="kp-car-scroll">
@@ -1465,6 +1426,7 @@ function App() {
                         const isSelected = String(form.selectedCarId) === String(car.id);
                         const isRequestedCatalogCar = requestedCatalogCarIds.includes(String(car.id));
                         const isAvailable = car.is_available_for_selection !== false;
+                        const isFeatured = Boolean(car.car_model?.is_featured);
                         const brand = car.car_model?.brand || "";
                         const model = car.car_model?.model || "";
                         const title = `${brand} ${model}`.trim();
@@ -1525,6 +1487,7 @@ function App() {
                               <div className="kp-car__head">
                                 <div>
                                   <h3>{title || "Vehicle"}</h3>
+                                  {isFeatured ? <small className="kp-car__featured-label">Featured vehicle</small> : null}
                                   {isRequestedCatalogCar ? <small className="kp-car__requested-label">Requested from Kara Plus</small> : null}
                                 </div>
                                 <span className={`kp-car__status ${isAvailable ? "is-ok" : "is-off"}`}>
