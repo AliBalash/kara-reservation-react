@@ -402,6 +402,18 @@ function normalizeBrandKey(value) {
     .replace(/[^a-z0-9]/g, "");
 }
 
+function createPublicRequestUuid() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (character) => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === "x" ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}
+
 function brandLogoPath(brand) {
   const normalized = normalizeBrandKey(brand);
   if (!normalized) return "";
@@ -411,9 +423,12 @@ function brandLogoPath(brand) {
 function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [requestedVehicleCode] = useState(getRequestedVehicleCode);
+  const [isCatalogLookupEnabled, setCatalogLookupEnabled] = useState(Boolean(requestedVehicleCode));
+  const [isCatalogEntryValid, setCatalogEntryValid] = useState(false);
   const [requestedCatalogItem, setRequestedCatalogItem] = useState(null);
   const [requestedCatalogCarIds, setRequestedCatalogCarIds] = useState([]);
   const [catalogSelectionError, setCatalogSelectionError] = useState("");
+  const [catalogSelectionMode, setCatalogSelectionMode] = useState("");
   const [shouldScrollToVehicles, setShouldScrollToVehicles] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -441,15 +456,11 @@ function App() {
   const [quote, setQuote] = useState(null);
   const quoteAbortRef = useRef(null);
   const selectedCatalogCarRef = useRef(null);
+  const publicRequestUuidRef = useRef(null);
 
   const fallbackCarImage = useMemo(() => fallbackImageUrl(), []);
 
   const locationOptions = bootstrapData?.location_options || [];
-  const availableCarsCount = useMemo(
-    () => cars.filter((car) => car.is_available_for_selection !== false).length,
-    [cars]
-  );
-
   const brandFilterOptions = useMemo(() => {
     const map = new Map();
 
@@ -523,6 +534,29 @@ function App() {
     return list;
   }, [cars, carFilters]);
 
+  const vehicleGroups = useMemo(() => {
+    const groups = new Map();
+
+    filteredCars.forEach((car) => {
+      const brand = String(car?.car_model?.brand || "").trim() || "Other vehicles";
+      const key = normalizeBrandKey(brand) || "other";
+      const existing = groups.get(key);
+
+      if (existing) {
+        existing.cars.push(car);
+        return;
+      }
+
+      groups.set(key, {
+        key,
+        label: brand,
+        cars: [car],
+      });
+    });
+
+    return Array.from(groups.values());
+  }, [filteredCars]);
+
   const isSelectedCarHiddenByFilter = useMemo(() => {
     if (!form.selectedCarId) return false;
     return !filteredCars.some((car) => String(car.id) === String(form.selectedCarId));
@@ -554,13 +588,6 @@ function App() {
     () => cars.find((car) => String(car.id) === String(form.selectedCarId)) || null,
     [cars, form.selectedCarId]
   );
-  const hasAvailableRequestedVehicle = useMemo(
-    () => cars.some(
-      (car) => requestedCatalogCarIds.includes(String(car.id)) && car.is_available_for_selection !== false
-    ),
-    [cars, requestedCatalogCarIds]
-  );
-
   const pickupDateValue = useMemo(() => parseApiDateTime(form.pickupDate), [form.pickupDate]);
   const returnDateValue = useMemo(() => parseApiDateTime(form.returnDate), [form.returnDate]);
 
@@ -672,7 +699,7 @@ function App() {
       },
       controller.signal
     );
-    const isCatalogSelection = requestedVehicleCode && hasRentalWindow;
+    const isCatalogSelection = requestedVehicleCode && isCatalogLookupEnabled && hasRentalWindow;
     const selectionRequest = isCatalogSelection
       ? fetchCatalogSelection(
           {
@@ -686,38 +713,41 @@ function App() {
 
     Promise.all([carsRequest, selectionRequest])
       .then(([allCars, selection]) => {
-        const list = allCars || [];
-        setCars(list);
+        let list = allCars || [];
         setCatalogSelectionError("");
 
         if (isCatalogSelection) {
           if (selection?.error) {
             setRequestedCatalogCarIds([]);
+            setRequestedCatalogItem(null);
+            setCatalogEntryValid(false);
+            setCatalogLookupEnabled(false);
+            setCatalogSelectionMode("");
             setCatalogSelectionError(
-              "We could not match the vehicle you selected. Browse the full catalogue to choose another vehicle."
+              "We could not validate the vehicle link. The full reservation catalogue is available below."
             );
-            return;
+          } else {
+            const requestedCars = selection?.cars || [];
+            list = requestedCars;
+            setRequestedCatalogItem(selection?.catalog_item || null);
+            setRequestedCatalogCarIds(requestedCars.map((car) => String(car.id)));
+            setCatalogEntryValid(Boolean(selection?.catalog_item));
+            setCatalogSelectionMode(selection?.selection_mode || "exact_year");
+            setCatalogSelectionError(selection?.message || "");
           }
-
-          const requestedCars = selection?.cars || [];
-          setRequestedCatalogItem(selection?.catalog_item || null);
-          setRequestedCatalogCarIds(requestedCars.map((car) => String(car.id)));
         } else {
           setRequestedCatalogCarIds([]);
         }
+
+        setCars(list);
 
         setForm((prev) => {
           const stillExists = list.some((car) => String(car.id) === String(prev.selectedCarId));
           if (stillExists) return prev;
 
-          const firstAvailable = isCatalogSelection
-            ? list.find(
-                (car) => selection?.cars?.some((requestedCar) => String(requestedCar.id) === String(car.id))
-                  && car.is_available_for_selection !== false
-              )
-            : null;
-          if (firstAvailable) {
-            return { ...prev, selectedCarId: String(firstAvailable.id) };
+          const firstRequestedCar = isCatalogSelection ? list[0] : null;
+          if (firstRequestedCar) {
+            return { ...prev, selectedCarId: String(firstRequestedCar.id) };
           }
 
           return { ...prev, selectedCarId: "" };
@@ -737,7 +767,7 @@ function App() {
       });
 
     return () => controller.abort();
-  }, [bootstrapData, form.pickupDate, form.returnDate, requestedVehicleCode]);
+  }, [bootstrapData, form.pickupDate, form.returnDate, requestedVehicleCode, isCatalogLookupEnabled]);
 
   useEffect(() => {
     if (currentStep !== 1 || isCarsLoading || !shouldScrollToVehicles) return;
@@ -926,9 +956,6 @@ function App() {
         nextErrors.selectedCarId = "Select a vehicle to continue.";
       }
 
-      if (selectedCar && selectedCar.is_available_for_selection === false) {
-        nextErrors.selectedCarId = "This vehicle is unavailable for your selected dates.";
-      }
     }
 
     if (stepIndex === 2) {
@@ -1019,7 +1046,8 @@ function App() {
     try {
       const payload = {
         ...submitPayloadFromForm(form, bootstrapData),
-        ...(requestedVehicleCode ? { marketing_vehicle_code: requestedVehicleCode } : {}),
+        ...(isCatalogEntryValid ? { marketing_vehicle_code: requestedVehicleCode } : {}),
+        public_request_uuid: publicRequestUuidRef.current || (publicRequestUuidRef.current = createPublicRequestUuid()),
       };
       const result = await createReservation(payload);
       setSubmitSuccess(result);
@@ -1050,6 +1078,7 @@ function App() {
     setSubmitError("");
     setSubmitSuccess(null);
     setQuote(null);
+    publicRequestUuidRef.current = null;
     resetCarFilters();
   }
 
@@ -1248,7 +1277,9 @@ function App() {
                       {requestedCatalogItem?.display_name || "Your requested vehicle"}
                       {requestedCatalogItem?.manufacturing_year ? ` · ${requestedCatalogItem.manufacturing_year}` : ""}
                     </strong>
-                    <small>Code: {requestedVehicleCode}. We will confirm availability after you enter your rental dates.</small>
+                    <small>
+                      {catalogSelectionError || `Code: ${requestedVehicleCode}. We will confirm availability after you enter your rental dates.`}
+                    </small>
                   </aside>
                 ) : null}
 
@@ -1340,8 +1371,8 @@ function App() {
                   <h2>Choose Your Car</h2>
                   <p>
                     {requestedCatalogItem
-                      ? `Your requested ${requestedCatalogItem.display_name} is highlighted below. You can still browse and choose any available vehicle.`
-                      : "Browse available vehicles, compare key details and select the one that fits your journey."}
+                      ? `Showing the reservation options that match your requested ${requestedCatalogItem.display_name}.`
+                      : "Browse vehicle options, compare key details and send the request that best fits your journey."}
                   </p>
                 </header>
 
@@ -1353,9 +1384,9 @@ function App() {
                       {requestedCatalogItem?.manufacturing_year ? ` · ${requestedCatalogItem.manufacturing_year}` : ""}
                     </strong>
                     <small>
-                      {catalogSelectionError || (hasAvailableRequestedVehicle
-                        ? "The matching available vehicle is selected for you. You can keep it or choose any other vehicle below."
-                        : "This vehicle is not available for the selected dates. Browse the full catalogue below to choose another vehicle.")}
+                      {catalogSelectionError || (catalogSelectionMode === "model_fallback"
+                        ? "The requested model year is no longer in the fleet, so we selected the closest matching model."
+                        : "The matching vehicle is selected for your request.")}
                     </small>
                   </aside>
                 ) : null}
@@ -1368,21 +1399,6 @@ function App() {
                       onChange={(event) => updateCarFilter("search", event.target.value)}
                       placeholder="Brand or model"
                     />
-                  </label>
-
-                  <label className="kp-car-filter-field">
-                    <span>Brand</span>
-                    <select
-                      value={carFilters.brand}
-                      onChange={(event) => updateCarFilter("brand", event.target.value)}
-                    >
-                      <option value="all">All brands</option>
-                      {brandFilterOptions.map((item) => (
-                        <option key={item.key} value={item.key}>
-                          {item.label} ({item.count})
-                        </option>
-                      ))}
-                    </select>
                   </label>
 
                   <label className="kp-car-filter-field">
@@ -1407,12 +1423,36 @@ function App() {
                   </button>
                 </div>
 
+                <div className="kp-brand-rail" role="group" aria-label="Filter vehicles by brand">
+                  <button
+                    type="button"
+                    className={`kp-brand-filter ${carFilters.brand === "all" ? "is-active" : ""}`}
+                    aria-pressed={carFilters.brand === "all"}
+                    onClick={() => updateCarFilter("brand", "all")}
+                  >
+                    <span>All vehicles</span>
+                    <strong>{cars.length}</strong>
+                  </button>
+                  {brandFilterOptions.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={`kp-brand-filter ${carFilters.brand === item.key ? "is-active" : ""}`}
+                      aria-pressed={carFilters.brand === item.key}
+                      onClick={() => updateCarFilter("brand", item.key)}
+                    >
+                      <span>{item.label}</span>
+                      <strong>{item.count}</strong>
+                    </button>
+                  ))}
+                </div>
+
                 <div className="kp-filter-meta kp-filter-meta--stats">
                   <strong>
                     {filteredCars.length} / {cars.length}
                   </strong>
-                  <span>{filteredCars.length} vehicles shown</span>
-                  <small>{availableCarsCount} currently available · Featured vehicles appear first</small>
+                  <span>{vehicleGroups.length} brand collections · {filteredCars.length} vehicles shown</span>
+                  <small>Cards are grouped by brand · Featured vehicles appear first</small>
                 </div>
 
                 <div className="kp-car-scroll">
@@ -1421,16 +1461,51 @@ function App() {
                   ) : filteredCars.length === 0 ? (
                     <div className="kp-empty">No vehicles match these filters. Try adjusting your search.</div>
                   ) : (
-                    <div className="kp-car-list">
-                      {filteredCars.map((car, cardIndex) => {
+                    <div className="kp-vehicle-groups">
+                      {vehicleGroups.map((group, groupIndex) => (
+                        <section className="kp-vehicle-group" key={group.key} aria-label={`${group.label} vehicles`}>
+                          <header className="kp-vehicle-group__head">
+                            <div className="kp-vehicle-group__identity">
+                              <span className="kp-vehicle-group__logo" aria-hidden="true">
+                                <img
+                                  src={brandLogoPath(group.label) || DEFAULT_BRAND_LOGO}
+                                  alt=""
+                                  loading="lazy"
+                                  onError={(event) => {
+                                    if (!event.currentTarget.src.includes(DEFAULT_BRAND_LOGO)) {
+                                      event.currentTarget.src = DEFAULT_BRAND_LOGO;
+                                    }
+                                  }}
+                                />
+                              </span>
+                              <div>
+                                <small>Brand collection</small>
+                                <h3>{group.label}</h3>
+                              </div>
+                            </div>
+                            <p>
+                              <strong>{group.cars.length}</strong> {group.cars.length === 1 ? "vehicle" : "vehicles"}
+                            </p>
+                          </header>
+
+                          <div className="kp-car-list">
+                      {group.cars.map((car, cardIndex) => {
                         const isSelected = String(form.selectedCarId) === String(car.id);
                         const isRequestedCatalogCar = requestedCatalogCarIds.includes(String(car.id));
-                        const isAvailable = car.is_available_for_selection !== false;
                         const isFeatured = Boolean(car.car_model?.is_featured);
                         const brand = car.car_model?.brand || "";
                         const model = car.car_model?.model || "";
-                        const title = `${brand} ${model}`.trim();
+                        const fallbackTitle = `${brand} ${model}`.trim();
+                        const title = car.catalog_item?.display_name || fallbackTitle;
                         const logo = brandLogoPath(brand) || DEFAULT_BRAND_LOGO;
+                        const display = car.reservation_display || {};
+                        const yearLabel = display.is_year_variant
+                          ? `Model year ${display.year}`
+                          : display.year_from && display.year_to && display.year_from !== display.year_to
+                            ? `Model years ${display.year_from}–${display.year_to}`
+                            : display.year_from
+                              ? `Model year ${display.year_from}`
+                              : "";
 
                         const chips = [
                           car.options?.gear
@@ -1447,10 +1522,8 @@ function App() {
                           <article
                             key={car.id}
                             ref={isSelected && isRequestedCatalogCar ? selectedCatalogCarRef : null}
-                            className={`kp-car ${isSelected ? "is-selected" : ""} ${isRequestedCatalogCar ? "is-requested" : ""} ${
-                              !isAvailable ? "is-unavailable" : ""
-                            }`}
-                            style={{ "--kp-card-index": cardIndex % 12 }}
+                            className={`kp-car ${isSelected ? "is-selected" : ""} ${isRequestedCatalogCar ? "is-requested" : ""}`}
+                            style={{ "--kp-card-index": (groupIndex * 7 + cardIndex) % 12 }}
                           >
                             <div className="kp-car__media">
                               <div className="kp-car__brand">
@@ -1487,12 +1560,14 @@ function App() {
                               <div className="kp-car__head">
                                 <div>
                                   <h3>{title || "Vehicle"}</h3>
-                                  {isFeatured ? <small className="kp-car__featured-label">Featured vehicle</small> : null}
-                                  {isRequestedCatalogCar ? <small className="kp-car__requested-label">Requested from Kara Plus</small> : null}
+                                  {yearLabel || isFeatured || isRequestedCatalogCar ? (
+                                    <div className="kp-car__labels">
+                                      {yearLabel ? <small className="kp-car__year-label">{yearLabel}</small> : null}
+                                      {isFeatured ? <small className="kp-car__featured-label">Featured vehicle</small> : null}
+                                      {isRequestedCatalogCar ? <small className="kp-car__requested-label">Requested from Kara Plus</small> : null}
+                                    </div>
+                                  ) : null}
                                 </div>
-                                <span className={`kp-car__status ${isAvailable ? "is-ok" : "is-off"}`}>
-                                  {isAvailable ? "Available" : "Unavailable"}
-                                </span>
                               </div>
 
 
@@ -1519,24 +1594,20 @@ function App() {
                                 )}
                               </div>
 
-                              {!isAvailable && car.conflicts?.[0] ? (
-                                <p className="kp-warning">
-                                  Unavailable from {car.conflicts[0].pickup_date} to {car.conflicts[0].return_date}
-                                </p>
-                              ) : null}
-
                               <button
                                 type="button"
                                 className={`kp-btn ${isSelected ? "kp-btn--secondary" : "kp-btn--primary"}`}
-                                disabled={!isAvailable}
                                 onClick={() => updateField("selectedCarId", String(car.id))}
                               >
-                                {isSelected ? "Selected" : isAvailable ? "Select Car" : "Unavailable"}
+                                {isSelected ? "Selected" : "Select Car"}
                               </button>
                             </div>
                           </article>
                         );
                       })}
+                          </div>
+                        </section>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -1821,8 +1892,18 @@ function App() {
                     onError={handleCarImageError}
                   />
                   <strong>
-                    {selectedCar.car_model?.brand} {selectedCar.car_model?.model}
+                    {selectedCar.catalog_item?.display_name || `${selectedCar.car_model?.brand || ""} ${selectedCar.car_model?.model || ""}`.trim()}
                   </strong>
+                  {selectedCar.reservation_display?.is_year_variant ? (
+                    <small>Model year: {selectedCar.reservation_display.year}</small>
+                  ) : selectedCar.reservation_display?.year_from && selectedCar.reservation_display?.year_to ? (
+                    <small>
+                      Model years: {selectedCar.reservation_display.year_from}
+                      {selectedCar.reservation_display.year_from !== selectedCar.reservation_display.year_to
+                        ? `–${selectedCar.reservation_display.year_to}`
+                        : ""}
+                    </small>
+                  ) : null}
                   <small>Vehicle ID: {selectedCar.plate_number || "—"}</small>
                 </>
               ) : (

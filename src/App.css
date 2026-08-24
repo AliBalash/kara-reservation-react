@@ -418,11 +418,13 @@
 }
 .kp-car-toolbar {
   display: grid;
-  grid-template-columns: 1.55fr repeat(2, minmax(130px, 1fr)) auto;
+  grid-template-columns: minmax(220px, 1.55fr) minmax(155px, 0.75fr) auto;
   gap: 10px;
   padding: 14px;
-  margin-bottom: 20px;
-  background: #f3f1ec;
+  margin-bottom: 12px;
+  border: 1px solid var(--kp-line);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #faf9f6, #f1eee7);
 }
 .kp-car-filter-field {
   display: grid;
@@ -453,6 +455,57 @@
   font-weight: 700;
   cursor: pointer;
 }
+.kp-brand-rail {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0 15px;
+  margin: 0 -2px 2px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--kp-gold-deep) transparent;
+}
+.kp-brand-filter {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 7px 9px 7px 12px;
+  border: 1px solid var(--kp-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kp-muted);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, color 0.18s, transform 0.18s;
+}
+.kp-brand-filter:hover {
+  border-color: rgba(162, 120, 16, 0.55);
+  color: var(--kp-ink);
+  transform: translateY(-1px);
+}
+.kp-brand-filter strong {
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #f3f0e8;
+  color: var(--kp-ink);
+  font-size: 0.68rem;
+}
+.kp-brand-filter.is-active {
+  border-color: var(--kp-black);
+  background: var(--kp-black);
+  color: #fff;
+}
+.kp-brand-filter.is-active strong {
+  background: var(--kp-gold);
+  color: var(--kp-black);
+}
 .kp-filter-meta {
   display: flex;
   justify-content: space-between;
@@ -475,24 +528,95 @@
 .kp-car-scroll::-webkit-scrollbar { width: 8px; }
 .kp-car-scroll::-webkit-scrollbar-track { background: #eeeae1; }
 .kp-car-scroll::-webkit-scrollbar-thumb { background: var(--kp-gold-deep); border-radius: 999px; }
+.kp-vehicle-groups {
+  display: grid;
+  gap: 28px;
+}
+.kp-vehicle-group {
+  padding: 18px;
+  border: 1px solid var(--kp-line);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #fcfbf8 0%, #f5f3ee 100%);
+}
+.kp-vehicle-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 2px 15px;
+}
+.kp-vehicle-group__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+}
+.kp-vehicle-group__logo {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #e3ded2;
+  border-radius: 13px;
+  background: #fff;
+}
+.kp-vehicle-group__logo img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.kp-vehicle-group__head small {
+  display: block;
+  margin-bottom: 1px;
+  color: var(--kp-gold-deep);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.kp-vehicle-group__head h3 {
+  margin: 0;
+  color: var(--kp-ink);
+  font-size: 1.14rem;
+}
+.kp-vehicle-group__head p {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 1px;
+  margin: 0;
+  color: var(--kp-muted);
+  font-size: 0.7rem;
+  line-height: 1.25;
+  text-align: right;
+}
+.kp-vehicle-group__head p strong {
+  color: var(--kp-ink);
+  font-size: 0.92rem;
+}
 .kp-car-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+  align-items: stretch;
 }
 .kp-car {
   position: relative;
   display: grid;
+  grid-template-rows: 214px minmax(0, 1fr);
+  height: 100%;
   overflow: hidden;
-  border: 1px solid var(--kp-line);
+  border: 1px solid #e1ddd3;
+  border-radius: 16px;
   background: #fff;
+  box-shadow: 0 5px 18px rgba(38, 33, 20, 0.035);
   transition:
     transform 0.2s,
     box-shadow 0.2s;
 }
 .kp-car:hover {
   transform: translateY(-3px);
-  box-shadow: var(--kp-shadow);
+  box-shadow: 0 14px 30px rgba(38, 33, 20, 0.14);
 }
 .kp-car.is-selected {
   border: 2px solid var(--kp-gold-deep);
@@ -501,32 +625,61 @@
   box-shadow: 0 0 0 4px rgba(218, 173, 68, 0.14), var(--kp-shadow);
 }
 .kp-car__requested-label {
-  display: inline-block;
-  margin-top: 0.28rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0.18rem 0.48rem;
+  border: 1px solid rgba(218, 173, 68, 0.35);
+  border-radius: 999px;
   color: var(--kp-gold-deep);
+  background: rgba(218, 173, 68, 0.08);
   font-size: 0.69rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .kp-car__featured-label {
-  display: inline-block;
-  margin-top: 0.28rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
   color: #7f651a;
+  background: #fbf4db;
   font-size: 0.69rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+.kp-car__year-label {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 22px;
+  margin: 0;
+  padding: 0.18rem 0.48rem;
+  border: 1px solid rgba(218, 173, 68, 0.42);
+  border-radius: 999px;
+  color: var(--kp-gold-deep, #9b7413);
+  background: rgba(218, 173, 68, 0.1);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+}
 .kp-car__media {
   position: relative;
-  aspect-ratio: 1.65;
+  height: 214px;
   background: #f4f2ed;
 }
 .kp-car__media > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.35s ease;
+}
+.kp-car:hover .kp-car__media > img {
+  transform: scale(1.025);
 }
 .kp-car__brand {
   position: absolute;
@@ -538,6 +691,7 @@
   align-items: center;
   gap: 7px;
   padding: 5px 8px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.92);
   color: var(--kp-ink);
   font-size: 0.72rem;
@@ -548,34 +702,37 @@
   right: 10px;
   bottom: 10px;
   padding: 8px 10px;
+  border-radius: 9px;
   background: var(--kp-black);
   color: var(--kp-gold);
   font-size: 0.75rem;
 }
 .kp-car__content {
+  display: flex;
+  min-height: 255px;
+  flex-direction: column;
   padding: 18px;
 }
 .kp-car__head {
   display: flex;
   align-items: start;
-  justify-content: space-between;
   gap: 10px;
+  min-height: 73px;
 }
 .kp-car__head h3 {
   margin: 0;
   font-size: 1.18rem;
+  line-height: 1.25;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
-.kp-car__status {
-  display: inline-flex;
-  padding: 4px 7px;
-  background: #eaf5ee;
-  color: var(--kp-success);
-  font-size: 0.68rem;
-  font-weight: 800;
-}
-.kp-car__status.is-unavailable {
-  background: #f9e8e5;
-  color: var(--kp-danger);
+.kp-car__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
 }
 .kp-brand-logo {
   display: inline-flex;
@@ -593,10 +750,11 @@
   flex-wrap: wrap;
   gap: 6px;
   padding: 0;
+  min-height: 30px;
   margin: 14px 0;
   list-style: none;
 }
-.kp-chip-list li {
+.kp-chip-list span {
   padding: 5px 7px;
   background: #f5f3ee;
   color: var(--kp-muted);
@@ -608,7 +766,7 @@
   gap: 5px;
   margin: 14px 0;
 }
-.kp-car__prices div {
+.kp-car__prices article {
   padding: 7px 4px;
   border-top: 1px solid var(--kp-line);
 }
@@ -636,6 +794,10 @@
     background 0.2s,
     color 0.2s,
     border-color 0.2s;
+}
+.kp-car__content > .kp-btn {
+  width: 100%;
+  margin-top: auto;
 }
 .kp-btn:disabled {
   cursor: not-allowed;
@@ -922,10 +1084,10 @@
     position: static;
   }
   .kp-car-toolbar {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: minmax(180px, 1fr) minmax(145px, 0.8fr) auto;
   }
   .kp-car-filter-field--search {
-    grid-column: span 2;
+    grid-column: auto;
   }
 }
 @media (max-width: 760px) {
@@ -987,10 +1149,20 @@
     grid-template-columns: 1fr;
   }
   .kp-car-toolbar {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr auto;
   }
   .kp-car-filter-field--search {
     grid-column: 1/-1;
+  }
+  .kp-vehicle-group {
+    padding: 14px;
+    border-radius: 16px;
+  }
+  .kp-vehicle-group__head {
+    align-items: flex-start;
+  }
+  .kp-vehicle-group__head p {
+    padding-top: 3px;
   }
   .kp-filter-meta {
     display: grid;
