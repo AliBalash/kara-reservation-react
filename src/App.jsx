@@ -454,6 +454,7 @@ function App() {
   const [isSubmitting, setSubmitting] = useState(false);
 
   const [quote, setQuote] = useState(null);
+  const [quoteNotice, setQuoteNotice] = useState("");
   const quoteAbortRef = useRef(null);
   const selectedCatalogCarRef = useRef(null);
   const publicRequestUuidRef = useRef(null);
@@ -624,7 +625,7 @@ function App() {
     return Math.max(1, Math.ceil((returned - pickup) / 86400000));
   }, [form.pickupDate, form.returnDate]);
 
-  const canRequestQuote = useMemo(
+  const hasCompleteQuoteInputs = useMemo(
     () =>
       !!(
         form.selectedCarId &&
@@ -641,8 +642,23 @@ function App() {
       form.returnLocation,
     ]
   );
+  const hasValidQuoteSchedule = useMemo(() => {
+    const pickup = parseApiDateTime(form.pickupDate);
+    const returned = parseApiDateTime(form.returnDate);
+
+    return (
+      !Number.isNaN(pickup.getTime()) &&
+      !Number.isNaN(returned.getTime()) &&
+      pickup >= minPickupAt &&
+      returned > pickup
+    );
+  }, [form.pickupDate, form.returnDate, minPickupAt]);
+  const canRequestQuote = hasCompleteQuoteInputs && hasValidQuoteSchedule;
 
   const quotePayload = useMemo(() => quotePayloadFromForm(form), [form]);
+  const formatQuoteMoney = (value) => (quote ? formatMoney(value) : "—");
+  const hasRentalSchedule = Boolean(form.pickupDate && form.returnDate);
+  const startingDailyRate = Number(selectedCar?.pricing?.short || 0);
   const stepCompletionPercent = useMemo(
     () => Math.round(((currentStep + 1) / STEPS.length) * 100),
     [currentStep]
@@ -690,7 +706,6 @@ function App() {
     const controller = new AbortController();
     setCarsLoading(true);
 
-    const hasRentalWindow = Boolean(form.pickupDate && form.returnDate);
     const carsRequest = fetchCars(
       {
         modelId: null,
@@ -699,7 +714,10 @@ function App() {
       },
       controller.signal
     );
-    const isCatalogSelection = requestedVehicleCode && isCatalogLookupEnabled && hasRentalWindow;
+    // Resolve a deep-linked vehicle immediately. Dates only refine its live
+    // availability later; they must not delay the selected car in the booking
+    // summary when a visitor arrives from the main website.
+    const isCatalogSelection = requestedVehicleCode && isCatalogLookupEnabled;
     const selectionRequest = isCatalogSelection
       ? fetchCatalogSelection(
           {
@@ -728,12 +746,20 @@ function App() {
             );
           } else {
             const requestedCars = selection?.cars || [];
-            list = requestedCars;
+            // Keep the complete catalogue visible. The linked vehicle is
+            // merged in only when normal card grouping would otherwise hide
+            // it, so it can still be selected and compared beside all cars.
+            requestedCars.forEach((requestedCar) => {
+              if (!list.some((car) => String(car.id) === String(requestedCar.id))) {
+                list = [requestedCar, ...list];
+              }
+            });
             setRequestedCatalogItem(selection?.catalog_item || null);
             setRequestedCatalogCarIds(requestedCars.map((car) => String(car.id)));
             setCatalogEntryValid(Boolean(selection?.catalog_item));
             setCatalogSelectionMode(selection?.selection_mode || "exact_year");
             setCatalogSelectionError(selection?.message || "");
+
           }
         } else {
           setRequestedCatalogCarIds([]);
@@ -745,7 +771,9 @@ function App() {
           const stillExists = list.some((car) => String(car.id) === String(prev.selectedCarId));
           if (stillExists) return prev;
 
-          const firstRequestedCar = isCatalogSelection ? list[0] : null;
+          const firstRequestedCar = isCatalogSelection
+            ? (selection?.cars || []).find((car) => list.some((item) => String(item.id) === String(car.id)))
+            : null;
           if (firstRequestedCar) {
             return { ...prev, selectedCarId: String(firstRequestedCar.id) };
           }
@@ -778,14 +806,21 @@ function App() {
   }, [currentStep, isCarsLoading, shouldScrollToVehicles]);
 
   useEffect(() => {
-    if (!canRequestQuote) {
+    if (quoteAbortRef.current) {
+      quoteAbortRef.current.abort();
+    }
+
+    if (!hasCompleteQuoteInputs) {
       setQuote(null);
+      setQuoteNotice("");
       setQuoteLoading(false);
       return;
     }
 
-    if (quoteAbortRef.current) {
-      quoteAbortRef.current.abort();
+    if (!hasValidQuoteSchedule) {
+      setQuoteNotice("Choose a valid pick-up and return time to calculate your live estimate.");
+      setQuoteLoading(false);
+      return;
     }
 
     const controller = new AbortController();
@@ -796,6 +831,7 @@ function App() {
       try {
         const result = await fetchQuote(quotePayload, controller.signal);
         setQuote(result);
+        setQuoteNotice("");
         setSubmitError("");
       } catch (error) {
         if (controller.signal.aborted) return;
@@ -803,11 +839,11 @@ function App() {
         if (isValidationApiError(error)) {
           setErrors((prev) => ({ ...prev, ...normalizeValidationErrors(error.errors) }));
           setSubmitError("Please review the highlighted fields and try again.");
-          setQuote(null);
+          setQuoteNotice("Price could not be refreshed until the highlighted fields are corrected.");
           return;
         }
 
-        setQuote(null);
+        setQuoteNotice("Price could not be refreshed. Please try again after checking the rental details.");
         setSubmitError(
           `We could not update your estimate: ${toPersianErrorText(
             error.message,
@@ -823,7 +859,7 @@ function App() {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [canRequestQuote, quotePayload]);
+  }, [canRequestQuote, hasCompleteQuoteInputs, hasValidQuoteSchedule, quotePayload]);
 
   function clearFieldError(field) {
     setErrors((prev) => {
@@ -855,6 +891,7 @@ function App() {
         selectedServices: Array.from(set),
       };
     });
+    clearFieldError("selectedServices");
   }
 
   function updateServiceQuantity(serviceId, value) {
@@ -1299,7 +1336,7 @@ function App() {
                       placeholderText="Select pick-up time"
                       autoComplete="off"
                     />
-                    <small className="kp-error">{getErrorText(errors.pickupDate)}</small>
+                    <small className="kp-error" role="alert">{getErrorText(errors.pickupDate)}</small>
                   </label>
 
                   <label className="kp-field">
@@ -1317,7 +1354,7 @@ function App() {
                       placeholderText="Select return time"
                       autoComplete="off"
                     />
-                    <small className="kp-error">{getErrorText(errors.returnDate)}</small>
+                    <small className="kp-error" role="alert">{getErrorText(errors.returnDate)}</small>
                   </label>
 
                   <label className="kp-field">
@@ -1333,7 +1370,7 @@ function App() {
                         </option>
                       ))}
                     </select>
-                    <small className="kp-error">{getErrorText(errors.pickupLocation)}</small>
+                    <small className="kp-error" role="alert">{getErrorText(errors.pickupLocation)}</small>
                   </label>
 
                   <label className="kp-field">
@@ -1350,7 +1387,7 @@ function App() {
                         </option>
                       ))}
                     </select>
-                    <small className="kp-error">{getErrorText(errors.returnLocation)}</small>
+                    <small className="kp-error" role="alert">{getErrorText(errors.returnLocation)}</small>
                   </label>
                 </div>
                 <label className="kp-same-location">
@@ -1371,7 +1408,7 @@ function App() {
                   <h2>Choose Your Car</h2>
                   <p>
                     {requestedCatalogItem
-                      ? `Showing the reservation options that match your requested ${requestedCatalogItem.display_name}.`
+                      ? `${requestedCatalogItem.display_name} is selected below. Compare it with the full vehicle catalogue.`
                       : "Browse vehicle options, compare key details and send the request that best fits your journey."}
                   </p>
                 </header>
@@ -1386,7 +1423,7 @@ function App() {
                     <small>
                       {catalogSelectionError || (catalogSelectionMode === "model_fallback"
                         ? "The requested model year is no longer in the fleet, so we selected the closest matching model."
-                        : "The matching vehicle is selected for your request.")}
+                        : "The matching vehicle is selected for your request. The full catalogue remains available below.")}
                     </small>
                   </aside>
                 ) : null}
@@ -1748,6 +1785,8 @@ function App() {
                         })}
                       </div>
 
+                      <small className="kp-error" role="alert">{getErrorText(errors.selectedServices)}</small>
+
                       <label className="kp-field kp-field--inline">
                         <span>Child seat quantity</span>
                         <input
@@ -1802,6 +1841,7 @@ function App() {
                           );
                         })}
                       </div>
+                      <small className="kp-error" role="alert">{getErrorText(errors.selectedInsurance)}</small>
 
                       <label className="kp-field">
                         <span>Driving licence option</span>
@@ -1816,6 +1856,7 @@ function App() {
                             </option>
                           ))}
                         </select>
+                        <small className="kp-error" role="alert">{getErrorText(errors.drivingLicenseOption)}</small>
                       </label>
 
                       <label className="kp-field">
@@ -1840,6 +1881,7 @@ function App() {
                         onChange={(event) => updateField("notes", event.target.value)}
                         placeholder="Anything we should know?"
                       />
+                      <small className="kp-error" role="alert">{getErrorText(errors.notes)}</small>
                     </label>
                   </div>
                 </details>
@@ -1913,34 +1955,50 @@ function App() {
               <div className="kp-summary__rows">
                 <div>
                   <span>Pick-up</span>
-                  <strong>{formatDateTime(form.pickupDate)}</strong>
+                  <strong>{form.pickupDate ? formatDateTime(form.pickupDate) : "Choose dates"}</strong>
                 </div>
                 <div>
                   <span>Return</span>
-                  <strong>{formatDateTime(form.returnDate)}</strong>
+                  <strong>{form.returnDate ? formatDateTime(form.returnDate) : "Choose dates"}</strong>
                 </div>
                 <div>
                   <span>Rental duration</span>
-                  <strong>{rentalDays}-day rental</strong>
+                  <strong>{hasRentalSchedule ? `${rentalDays}-day rental` : "Set rental dates"}</strong>
                 </div>
               </div>
 
               <div className="kp-summary__quote" aria-live="polite" aria-label="Live price estimate">
                 <header>
                   <span>Realtime estimate</span>
-                  {isQuoteLoading ? <small>Updating price…</small> : <small>Up to date</small>}
+                  {isQuoteLoading ? (
+                    <small>Updating price…</small>
+                  ) : quoteNotice ? (
+                    <small className="kp-summary__quote-notice">{quoteNotice}</small>
+                  ) : quote ? (
+                    <small>Up to date</small>
+                  ) : selectedCar ? (
+                    <small>Choose dates for your live total</small>
+                  ) : (
+                    <small>Choose a vehicle first</small>
+                  )}
                 </header>
                 <div>
                   <span>Base rental</span>
-                  <strong>{formatMoney(quote?.base_price)} AED</strong>
+                  <strong>
+                    {quote
+                      ? `${formatQuoteMoney(quote.base_price)} AED`
+                      : selectedCar && startingDailyRate > 0
+                        ? `From ${formatMoney(startingDailyRate)} AED / day`
+                        : "Choose a vehicle"}
+                  </strong>
                 </div>
                 <div>
                   <span>Extras</span>
-                  <strong>{formatMoney(quote?.services_total)} AED</strong>
+                  <strong>{quote ? `${formatQuoteMoney(quote.services_total)} AED` : "Calculated after dates"}</strong>
                 </div>
                 <div>
                   <span>Insurance</span>
-                  <strong>{formatMoney(quote?.insurance_total)} AED</strong>
+                  <strong>{quote ? `${formatQuoteMoney(quote.insurance_total)} AED` : "Calculated after dates"}</strong>
                 </div>
                 {Number(quote?.driver_cost || 0) > 0 ? (
                   <div>
@@ -1956,21 +2014,21 @@ function App() {
                 ) : null}
                 <div>
                   <span>Transfer</span>
-                  <strong>{formatMoney(quote?.transfer_costs?.total)} AED</strong>
+                  <strong>{quote ? `${formatQuoteMoney(quote.transfer_costs?.total)} AED` : "Calculated after dates"}</strong>
                 </div>
                 <div>
                   <span>VAT</span>
-                  <strong>{formatMoney(quote?.tax_amount)} AED</strong>
+                  <strong>{quote ? `${formatQuoteMoney(quote.tax_amount)} AED` : "Calculated after dates"}</strong>
                 </div>
                 <div className="kp-summary__total">
                   <span>Estimated Total</span>
-                  <strong>{formatMoney(quote?.final_total)} AED</strong>
+                  <strong>{quote ? `${formatQuoteMoney(quote.final_total)} AED` : "Choose dates"}</strong>
                 </div>
               </div>
             </section>
           </aside>
           <div className="kp-mobile-booking-bar" aria-live="polite">
-            <div><span>Estimated total</span><strong>{quote ? `${formatMoney(quote.final_total)} AED` : "Select a car"}</strong></div>
+            <div><span>Estimated total</span><strong>{quote ? `${formatMoney(quote.final_total)} AED` : "Complete details"}</strong></div>
             <button type="submit" className="kp-btn kp-btn--primary">{currentStep === STEPS.length - 1 ? "Send request" : "Continue"}</button>
           </div>
         </form>
