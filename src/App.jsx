@@ -344,8 +344,8 @@ function submitPayloadFromForm(form, bootstrapData) {
     email: form.email.trim() || null,
     phone: toApiPhone(form.phone),
     messenger_phone: toApiPhone(form.messengerPhone),
-    national_code: form.nationalCode.trim(),
-    nationality: form.nationality.trim(),
+    national_code: form.nationalCode.trim() || null,
+    nationality: form.nationality.trim() || null,
     notes: form.notes.trim() || null,
     kardo_required: true,
     payment_on_delivery: true,
@@ -999,8 +999,6 @@ function App() {
       if (!form.lastName.trim()) nextErrors.lastName = "Enter your last name.";
       if (!form.phone.trim()) nextErrors.phone = "Enter your phone number.";
       if (!form.messengerPhone.trim()) nextErrors.messengerPhone = "Enter your WhatsApp or Messenger number.";
-      if (!form.nationalCode.trim()) nextErrors.nationalCode = "Enter your national ID or identification.";
-      if (!form.nationality.trim()) nextErrors.nationality = "Enter your nationality.";
 
       const normalizedPhone = toApiPhone(form.phone);
       const normalizedMessenger = toApiPhone(form.messengerPhone);
@@ -1720,7 +1718,7 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>National ID / Identification</span>
+                    <span>National ID / Identification (optional)</span>
                     <input
                       autoComplete="off"
                       value={form.nationalCode}
@@ -1730,7 +1728,7 @@ function App() {
                   </label>
 
                   <label className="kp-field">
-                    <span>Nationality</span>
+                    <span>Nationality (optional)</span>
                     <input
                       autoComplete="country-name"
                       value={form.nationality}
