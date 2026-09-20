@@ -495,7 +495,6 @@ function App() {
         const haystack = [
           car?.car_model?.brand,
           car?.car_model?.model,
-          car?.plate_number,
           car?.car_model?.brand && car?.car_model?.model
             ? `${car.car_model.brand} ${car.car_model.model}`
             : "",
@@ -1946,7 +1945,6 @@ function App() {
                         : ""}
                     </small>
                   ) : null}
-                  <small>Vehicle ID: {selectedCar.plate_number || "—"}</small>
                 </>
               ) : (
                 <p className="kp-muted">Choose a vehicle to see your booking summary.</p>
