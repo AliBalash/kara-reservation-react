@@ -1532,14 +1532,6 @@ function App() {
                         const fallbackTitle = `${brand} ${model}`.trim();
                         const title = car.catalog_item?.display_name || fallbackTitle;
                         const logo = brandLogoPath(brand) || DEFAULT_BRAND_LOGO;
-                        const display = car.reservation_display || {};
-                        const yearLabel = display.is_year_variant
-                          ? `Model year ${display.year}`
-                          : display.year_from && display.year_to && display.year_from !== display.year_to
-                            ? `Model years ${display.year_from}–${display.year_to}`
-                            : display.year_from
-                              ? `Model year ${display.year_from}`
-                              : "";
 
                         const chips = [
                           car.options?.gear
@@ -1594,9 +1586,8 @@ function App() {
                               <div className="kp-car__head">
                                 <div>
                                   <h3>{title || "Vehicle"}</h3>
-                                  {yearLabel || isFeatured || isRequestedCatalogCar ? (
+                                  {isFeatured || isRequestedCatalogCar ? (
                                     <div className="kp-car__labels">
-                                      {yearLabel ? <small className="kp-car__year-label">{yearLabel}</small> : null}
                                       {isFeatured ? <small className="kp-car__featured-label">Featured vehicle</small> : null}
                                       {isRequestedCatalogCar ? <small className="kp-car__requested-label">Requested from Kara Plus</small> : null}
                                     </div>
@@ -1933,16 +1924,6 @@ function App() {
                   <strong>
                     {selectedCar.catalog_item?.display_name || `${selectedCar.car_model?.brand || ""} ${selectedCar.car_model?.model || ""}`.trim()}
                   </strong>
-                  {selectedCar.reservation_display?.is_year_variant ? (
-                    <small>Model year: {selectedCar.reservation_display.year}</small>
-                  ) : selectedCar.reservation_display?.year_from && selectedCar.reservation_display?.year_to ? (
-                    <small>
-                      Model years: {selectedCar.reservation_display.year_from}
-                      {selectedCar.reservation_display.year_from !== selectedCar.reservation_display.year_to
-                        ? `–${selectedCar.reservation_display.year_to}`
-                        : ""}
-                    </small>
-                  ) : null}
                 </>
               ) : (
                 <p className="kp-muted">Choose a vehicle to see your booking summary.</p>
