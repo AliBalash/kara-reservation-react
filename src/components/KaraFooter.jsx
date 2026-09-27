@@ -11,10 +11,10 @@ export default function KaraFooter() {
           <a className="kara-footer__phone" href="tel:+971506990654">(+971) 50 699 0654</a>
         </section>
         <nav className="kara-footer__links" aria-label="Footer navigation">
-          <a href="https://newsite.karaplus.ae/about-us/">About Us</a>
-          <a href="https://newsite.karaplus.ae/faqs/">FAQs</a>
-          <a href="https://newsite.karaplus.ae/terms-conditions/">Terms &amp; Conditions</a>
-          <a href="https://newsite.karaplus.ae/contact/">Contact</a>
+          <a href="https://karaplus.ae/about-us/">About Us</a>
+          <a href="https://karaplus.ae/faqs/">FAQs</a>
+          <a href="https://karaplus.ae/terms-conditions/">Terms &amp; Conditions</a>
+          <a href="https://karaplus.ae/contact/">Contact</a>
         </nav>
         <div className="kara-footer__map">
           <iframe

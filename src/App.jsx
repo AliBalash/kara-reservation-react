@@ -18,24 +18,24 @@ import ReservationHero from "./components/ReservationHero";
 import SuccessState from "./components/SuccessState";
 
 const MENU_ITEMS = [
-  { label: "Home", href: "https://newsite.karaplus.ae/" },
-  { label: "All Cars", href: "https://newsite.karaplus.ae/cars/" },
-  { label: "Blog", href: "https://newsite.karaplus.ae/blog/" },
-  { label: "About Us", href: "https://newsite.karaplus.ae/about-us/" },
-  { label: "Contact", href: "https://newsite.karaplus.ae/contact/" },
+  { label: "Home", href: "https://karaplus.ae/" },
+  { label: "All Cars", href: "https://karaplus.ae/cars/" },
+  { label: "Blog", href: "https://karaplus.ae/blog/" },
+  { label: "About Us", href: "https://karaplus.ae/about-us/" },
+  { label: "Contact", href: "https://karaplus.ae/contact/" },
 ];
 
 const PRICE_MENU_ITEMS = [
-  { label: "Economy Cars", href: "https://newsite.karaplus.ae/product-category/economy-cars/" },
-  { label: "Premium Cars", href: "https://newsite.karaplus.ae/product-category/premium-cars/" },
-  { label: "Luxury Cars", href: "https://newsite.karaplus.ae/product-category/luxury-cars/" },
+  { label: "Economy Cars", href: "https://karaplus.ae/product-category/economy-cars/" },
+  { label: "Premium Cars", href: "https://karaplus.ae/product-category/premium-cars/" },
+  { label: "Luxury Cars", href: "https://karaplus.ae/product-category/luxury-cars/" },
 ];
 
 const INFO_LINKS = [
-  { label: "About Us", href: "https://newsite.karaplus.ae/about-us/" },
-  { label: "FAQs", href: "https://newsite.karaplus.ae/faqs/" },
-  { label: "Terms & Conditions", href: "https://newsite.karaplus.ae/terms-conditions/" },
-  { label: "Contact", href: "https://newsite.karaplus.ae/contact/" },
+  { label: "About Us", href: "https://karaplus.ae/about-us/" },
+  { label: "FAQs", href: "https://karaplus.ae/faqs/" },
+  { label: "Terms & Conditions", href: "https://karaplus.ae/terms-conditions/" },
+  { label: "Contact", href: "https://karaplus.ae/contact/" },
 ];
 
 const STEPS = [
@@ -1155,7 +1155,7 @@ function App() {
         <div className="header-wrapper">
           <div className="kp-theme-container">
             <div className="logo">
-              <a href="https://newsite.karaplus.ae/" target="_blank" rel="noreferrer">
+              <a href="https://karaplus.ae/" target="_blank" rel="noreferrer">
                 <img
                   src="/kara-plus-logo.png"
                   alt="Kara Plus Rent a Car"
@@ -1223,7 +1223,7 @@ function App() {
                         </li>
                       ))}
                       <li className="ubermenu-item ubermenu-item-level-0 ubermenu-column ubermenu-column-auto ubermenu-item-has-children ubermenu-has-submenu-drop ubermenu-has-submenu-flyout kp-account-item">
-                        <a className="ubermenu-target ubermenu-target-with-image ubermenu-item-layout-default ubermenu-item-layout-image_only" href="https://newsite.karaplus.ae/contact/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                        <a className="ubermenu-target ubermenu-target-with-image ubermenu-item-layout-default ubermenu-item-layout-image_only" href="https://karaplus.ae/contact/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
                           <img
                             className="ubermenu-image ubermenu-image-size-variation_swatches_image_size"
                             src="/kara-plus-logo.png"
@@ -1235,7 +1235,7 @@ function App() {
                         </a>
                         <ul className="ubermenu-submenu ubermenu-submenu-type-flyout ubermenu-submenu-drop ubermenu-submenu-align-left_edge_item ubermenu-submenu-retractor-top">
                           <li className="ubermenu-item ubermenu-item-auto ubermenu-item-normal ubermenu-item-level-1">
-                            <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href="https://newsite.karaplus.ae/contact/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
+                            <a className="ubermenu-target ubermenu-item-layout-default ubermenu-item-layout-text_only" href="https://karaplus.ae/contact/" target="_blank" rel="noreferrer" onClick={closeMobileMenu}>
                               <span className="ubermenu-target-title ubermenu-target-text">ورود / ثبت نام</span>
                             </a>
                           </li>
@@ -2017,7 +2017,7 @@ function App() {
             <div className="kp-theme-row">
               <div className="widget-odd widget-first widget-1 kp-col-md-3">
                 <div className="widget">
-                  <a href="https://newsite.karaplus.ae/" target="_blank" rel="noreferrer">
+                  <a href="https://karaplus.ae/" target="_blank" rel="noreferrer">
                     <img
                       src="/kara-plus-logo.png"
                       className="image wp-image-13954 attachment-full size-full"
