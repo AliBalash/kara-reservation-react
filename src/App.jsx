@@ -9,6 +9,7 @@ import {
   fetchCars,
   fetchQuote,
   isValidationApiError,
+  isPriceChangeApiError,
 } from "./api";
 import "./App.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -454,6 +455,8 @@ function App() {
   const [isSubmitting, setSubmitting] = useState(false);
 
   const [quote, setQuote] = useState(null);
+  const [priceChange, setPriceChange] = useState(null);
+  const [acknowledgedFingerprint, setAcknowledgedFingerprint] = useState("");
   const [quoteNotice, setQuoteNotice] = useState("");
   const quoteAbortRef = useRef(null);
   const selectedCatalogCarRef = useRef(null);
@@ -509,7 +512,7 @@ function App() {
       return true;
     });
 
-    const comparePrice = (car) => Number(car?.pricing?.short || 0);
+    const comparePrice = (car) => Number(car?.date_pricing?.effective_daily_rate ?? car?.pricing?.short ?? 0);
 
     list = [...list].sort((left, right) => {
       const leftFeatured = left?.car_model?.is_featured ? 1 : 0;
@@ -621,8 +624,10 @@ function App() {
 
     if (!Number.isFinite(pickup) || !Number.isFinite(returned) || returned <= pickup) return 1;
 
-    return Math.max(1, Math.ceil((returned - pickup) / 86400000));
-  }, [form.pickupDate, form.returnDate]);
+    const graceMinutes = bootstrapData?.rental_duration_policy === "daily_ceiling_60_minute_grace_v2"
+      ? Math.max(0, Number(bootstrapData.rental_duration_grace_minutes || 0)) : 0;
+    return Math.max(1, Math.ceil((returned - pickup - graceMinutes * 60000) / 86400000));
+  }, [form.pickupDate, form.returnDate, bootstrapData?.rental_duration_policy, bootstrapData?.rental_duration_grace_minutes]);
 
   const hasCompleteQuoteInputs = useMemo(
     () =>
@@ -654,14 +659,24 @@ function App() {
   }, [form.pickupDate, form.returnDate, minPickupAt]);
   const canRequestQuote = hasCompleteQuoteInputs && hasValidQuoteSchedule;
 
-  const quotePayload = useMemo(() => quotePayloadFromForm(form), [form]);
+  // Personal details and price acknowledgements must not trigger another quote.
+  const quotePayloadKey = JSON.stringify(quotePayloadFromForm(form));
   const formatQuoteMoney = (value) => (quote ? formatMoney(value) : "—");
   const hasRentalSchedule = Boolean(form.pickupDate && form.returnDate);
   const startingDailyRate = Number(selectedCar?.pricing?.short || 0);
-  const stepCompletionPercent = useMemo(
-    () => Math.round(((currentStep + 1) / STEPS.length) * 100),
-    [currentStep]
+  const skipCarSelection = Boolean(
+    requestedVehicleCode &&
+    isCatalogLookupEnabled &&
+    isCatalogEntryValid &&
+    selectedCar &&
+    requestedCatalogCarIds.includes(String(selectedCar.id)) &&
+    !errors.selectedCarId
   );
+  // Keep the vehicle step available when correcting a server-side selection error.
+  const visibleSteps = STEPS.filter((step) => step.id !== 1 || !skipCarSelection || currentStep === 1);
+  const visibleStepIndex = visibleSteps.findIndex((step) => step.id === currentStep);
+  const stepCompletionPercent = Math.round(((visibleStepIndex + 1) / visibleSteps.length) * 100);
+  const isVehicleSelectionPending = Boolean(requestedVehicleCode && isCatalogLookupEnabled && isCarsLoading);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -730,6 +745,7 @@ function App() {
 
     Promise.all([carsRequest, selectionRequest])
       .then(([allCars, selection]) => {
+        if (controller.signal.aborted) return;
         let list = allCars || [];
         setCatalogSelectionError("");
 
@@ -745,9 +761,8 @@ function App() {
             );
           } else {
             const requestedCars = selection?.cars || [];
-            // Keep the complete catalogue visible. The linked vehicle is
-            // merged in only when normal card grouping would otherwise hide
-            // it, so it can still be selected and compared beside all cars.
+            // Retain the full catalogue for ordinary bookings and recovery from
+            // invalid selections; merge linked vehicles hidden by card grouping.
             requestedCars.forEach((requestedCar) => {
               if (!list.some((car) => String(car.id) === String(requestedCar.id))) {
                 list = [requestedCar, ...list];
@@ -828,7 +843,7 @@ function App() {
 
     const timer = window.setTimeout(async () => {
       try {
-        const result = await fetchQuote(quotePayload, controller.signal);
+        const result = await fetchQuote(JSON.parse(quotePayloadKey), controller.signal);
         setQuote(result);
         setQuoteNotice("");
         setSubmitError("");
@@ -858,7 +873,7 @@ function App() {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [canRequestQuote, hasCompleteQuoteInputs, hasValidQuoteSchedule, quotePayload]);
+  }, [canRequestQuote, hasCompleteQuoteInputs, hasValidQuoteSchedule, quotePayloadKey]);
 
   function clearFieldError(field) {
     setErrors((prev) => {
@@ -1036,24 +1051,28 @@ function App() {
   function goNext() {
     setSubmitError("");
 
-    if (!validateStep(currentStep)) {
+    if (isVehicleSelectionPending || !validateStep(currentStep)) {
       return;
     }
 
-    if (currentStep === 0) {
+    const nextStep = visibleSteps.find((step) => step.id > currentStep);
+    if (nextStep?.id === 1) {
       setShouldScrollToVehicles(true);
     }
 
-    setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    if (nextStep) setCurrentStep(nextStep.id);
   }
 
   function goBack() {
     setSubmitError("");
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
+    const previousStep = visibleSteps[visibleStepIndex - 1];
+    if (previousStep) setCurrentStep(previousStep.id);
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (isSubmitting || isVehicleSelectionPending) return;
 
     if (!bootstrapData) {
       setSubmitError("Reservation details are still loading. Please try again in a moment.");
@@ -1062,6 +1081,15 @@ function App() {
 
     if (currentStep !== STEPS.length - 1) {
       goNext();
+      return;
+    }
+
+    if (isQuoteLoading || !quote) {
+      setSubmitError("Please wait for your current price estimate before sending the request.");
+      return;
+    }
+    if (priceChange && acknowledgedFingerprint !== quote.quote_fingerprint) {
+      setSubmitError("Please review and accept the updated price before sending your request.");
       return;
     }
 
@@ -1080,13 +1108,19 @@ function App() {
     try {
       const payload = {
         ...submitPayloadFromForm(form, bootstrapData),
+        quote_fingerprint: quote.quote_fingerprint,
         ...(isCatalogEntryValid ? { marketing_vehicle_code: requestedVehicleCode } : {}),
         public_request_uuid: publicRequestUuidRef.current || (publicRequestUuidRef.current = createPublicRequestUuid()),
       };
       const result = await createReservation(payload);
       setSubmitSuccess(result);
     } catch (error) {
-      if (isValidationApiError(error)) {
+      if (isPriceChangeApiError(error) && error.payload?.data?.quote) {
+        setPriceChange({ previousTotal: quote.final_total });
+        setQuote(error.payload.data.quote);
+        setAcknowledgedFingerprint("");
+        setSubmitError("Your price has changed. Please review the new total and confirm below.");
+      } else if (isValidationApiError(error)) {
         const serverErrors = normalizeValidationErrors(error.errors);
         setErrors((prev) => ({ ...prev, ...serverErrors }));
         setSubmitError("Please fix the highlighted fields and try again.");
@@ -1112,6 +1146,8 @@ function App() {
     setSubmitError("");
     setSubmitSuccess(null);
     setQuote(null);
+    setPriceChange(null);
+    setAcknowledgedFingerprint("");
     publicRequestUuidRef.current = null;
     resetCarFilters();
   }
@@ -1258,11 +1294,11 @@ function App() {
       ) : (
         <form className="kp-shell" id="request-form" onSubmit={handleSubmit}>
           <section className="kp-main">
-            <div className="kp-stepper">
+            <div className="kp-stepper" style={{ "--kp-step-count": visibleSteps.length }}>
               <div className="kp-stepper__meta">
                 <div>
                   <strong>
-                    Step {currentStep + 1} of {STEPS.length}
+                    Step {visibleStepIndex + 1} of {visibleSteps.length}
                   </strong>
                   <small>{STEPS[currentStep]?.title}</small>
                 </div>
@@ -1272,7 +1308,7 @@ function App() {
                 <span style={{ width: `${stepCompletionPercent}%` }} />
               </div>
 
-              {STEPS.map((step) => {
+              {visibleSteps.map((step, index) => {
                 const isActive = step.id === currentStep;
                 const isDone = step.id < currentStep;
 
@@ -1285,7 +1321,7 @@ function App() {
                       if (step.id <= currentStep) setCurrentStep(step.id);
                     }}
                   >
-                    <span className="kp-step__index">{step.id + 1}</span>
+                    <span className="kp-step__index">{index + 1}</span>
                     <span className="kp-step__text">
                       <strong>{step.title}</strong>
                       <small>{step.subtitle}</small>
@@ -1296,12 +1332,22 @@ function App() {
             </div>
 
             {submitError ? <p className="kp-alert" role="alert">{submitError}</p> : null}
+            {priceChange && quote ? (
+              <aside className="kp-warning" role="alert">
+                <strong>Updated reservation price: {formatMoney(priceChange.previousTotal)} → {formatMoney(quote.final_total)} AED</strong>
+                <label className="kp-terms">
+                  <input type="checkbox" checked={acknowledgedFingerprint === quote.quote_fingerprint}
+                    onChange={(event) => setAcknowledgedFingerprint(event.target.checked ? quote.quote_fingerprint : "")} />
+                  <span>I accept the updated total of {formatMoney(quote.final_total)} AED.</span>
+                </label>
+              </aside>
+            ) : null}
 
             {currentStep === 0 ? (
               <article className="kp-panel" id="step-schedule">
                 <header className="kp-panel__head">
                   <h2>Plan Your Rental</h2>
-                  <p>Set your pick-up and return times, then choose where you would like to collect your vehicle.</p>
+                  <p>Set your pick-up and return times, then choose where you would like to collect your vehicle. All dates and times are Dubai time (UTC+4).</p>
                 </header>
 
                 {requestedVehicleCode ? (
@@ -1577,8 +1623,8 @@ function App() {
                               />
 
                               <div className="kp-car__price-tag">
-                                <small>From / day</small>
-                                <strong>{formatMoney(car.pricing?.short)} AED</strong>
+                                <small>{car.date_pricing ? "Your dates / day (avg.)" : "From / day"}</small>
+                                <strong>{formatMoney(car.date_pricing?.effective_daily_rate ?? car.pricing?.short)} AED</strong>
                               </div>
                             </div>
 
@@ -1596,7 +1642,11 @@ function App() {
                               </div>
 
 
-                              <div className="kp-car__prices">
+                              {car.date_pricing ? (
+                                <p className="kp-muted">Rental for your dates: <strong>{formatMoney(car.date_pricing.base_total)} AED</strong>
+                                  {car.date_pricing.has_seasonal_prices ? " · Date-based rates included" : ""}</p>
+                              ) : null}
+                              <div className="kp-car__prices" aria-label="Regular daily tariffs">
                                 <article>
                                   <span>1–6 days</span>
                                   <strong>{formatMoney(car.pricing?.short)} AED</strong>
@@ -1899,11 +1949,11 @@ function App() {
               </button>
 
               {currentStep < STEPS.length - 1 ? (
-                <button type="button" className="kp-btn kp-btn--primary" onClick={goNext}>
-                  Continue
+                <button type="button" className="kp-btn kp-btn--primary" onClick={goNext} disabled={isVehicleSelectionPending}>
+                  {isVehicleSelectionPending ? "Loading vehicle…" : "Continue"}
                 </button>
               ) : (
-                <button type="submit" className="kp-btn kp-btn--primary" disabled={isSubmitting}>
+                <button type="submit" className="kp-btn kp-btn--primary" disabled={isSubmitting || isQuoteLoading}>
                   {isSubmitting ? "Sending request…" : "Send reservation request"}
                 </button>
               )}
@@ -1969,6 +2019,14 @@ function App() {
                         : "Choose a vehicle"}
                   </strong>
                 </div>
+                {quote?.rental_pricing?.has_seasonal_prices ? (
+                  <details className="kp-muted">
+                    <summary>Date-based rental rates (Dubai)</summary>
+                    {quote.rental_pricing.daily_rates.map((day) => (
+                      <div key={day.date}><span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{day.date}{day.event ? ` · ${day.event}` : " · Regular tariff"}</span><strong>{formatMoney(day.rate)} AED</strong></div>
+                    ))}
+                  </details>
+                ) : null}
                 <div>
                   <span>Extras</span>
                   <strong>{quote ? `${formatQuoteMoney(quote.services_total)} AED` : "Calculated after dates"}</strong>
@@ -2006,7 +2064,7 @@ function App() {
           </aside>
           <div className="kp-mobile-booking-bar" aria-live="polite">
             <div><span>Estimated total</span><strong>{quote ? `${formatMoney(quote.final_total)} AED` : "Complete details"}</strong></div>
-            <button type="submit" className="kp-btn kp-btn--primary">{currentStep === STEPS.length - 1 ? "Send request" : "Continue"}</button>
+            <button type="submit" className="kp-btn kp-btn--primary" disabled={isSubmitting || isVehicleSelectionPending || (currentStep === STEPS.length - 1 && isQuoteLoading)}>{isVehicleSelectionPending ? "Loading vehicle…" : currentStep === STEPS.length - 1 ? "Send request" : "Continue"}</button>
           </div>
         </form>
       )}

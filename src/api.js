@@ -61,6 +61,10 @@ async function request(path, { method = "GET", body, signal } = {}) {
   return payload?.data ?? payload;
 }
 
+export function isPriceChangeApiError(error) {
+  return error instanceof ApiError && error.status === 409 && error.payload?.code === "price_changed";
+}
+
 export function isValidationApiError(error) {
   return error instanceof ApiError && error.status === 422;
 }
