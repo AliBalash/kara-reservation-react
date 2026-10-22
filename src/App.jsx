@@ -20,7 +20,7 @@ import SuccessState from "./components/SuccessState";
 
 const MENU_ITEMS = [
   { label: "Home", href: "https://karaplus.ae/" },
-  { label: "All Cars", href: "https://karaplus.ae/cars/" },
+  { label: "All Cars", href: "https://karaplus.ae/all-cars/" },
   { label: "Blog", href: "https://karaplus.ae/blog/" },
   { label: "About Us", href: "https://karaplus.ae/about-us/" },
   { label: "Contact", href: "https://karaplus.ae/contact/" },
